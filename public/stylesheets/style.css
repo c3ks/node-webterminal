@@ -1,3 +1,8 @@
+@font-face {
+        font-family: "TerminusWeb";
+        src: url('/font/Terminus.ttf');
+}
+
 *
 {
 	margin: 0;
@@ -5,7 +10,7 @@
 }
 
 body, input {
-  font: 14px "Terminus", monospace;
+  font: 14px "Terminus", "TerminusWeb", monospace;
 }
 
 #term
