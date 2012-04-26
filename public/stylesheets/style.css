@@ -10,12 +10,19 @@
 }
 
 body, input {
-  font: 14px "Terminus", "TerminusWeb", monospace;
+  	font: 14px "Terminus", "TerminusWeb", monospace;
+	background: #222;
+}
+
+div {
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
 }
 
 #term
 {
-	background: #000;
+	padding-left: 10px;
 	color: #0F0;
 	height: 700px;
 	width: 100%;
@@ -23,8 +30,13 @@ body, input {
 
 #cursor
 {
-	background: #000;
 	border: none;
 	color: #0F0;
-	width: 100%;
+	float: left;
+	width: 95%;
+}
+
+#promptPath {
+	float: left;
+	margin-right: 10px;
 }
