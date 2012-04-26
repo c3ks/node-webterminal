@@ -14,12 +14,13 @@ function submitInput(event)
 		$("#cursor").val("");
 
 		appendRequest(input);
-		IoWrapper.send(input);
+		IoWrapper.send(input, appendResponse);
 	}
 }
 
 function appendRequest(req)
 {
+	$("#output").append("$ ");
 	$("#output").append(req);
 	$("#output").append("<br />");
 }

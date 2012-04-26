@@ -3,10 +3,10 @@
  */
 
 var express = require('express')
-  , routes = require('./routes')
-  , io = require('socket.io').listen(app);
+  , routes = require('./routes');
 
-var app = module.exports = express.createServer();
+var app = module.exports = express.createServer()
+  , io = require('socket.io').listen(app);
 
 // Configuration
 
@@ -33,7 +33,7 @@ app.get('/', routes.index);
 
 io.sockets.on('connection', function (socket) {
   socket.on('send', function (data) {
-	io.sockets.emit(data);
+    socket.emit('receive', {data: data.data});
   });
 });
 

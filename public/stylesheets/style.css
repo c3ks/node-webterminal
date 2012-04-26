@@ -4,8 +4,8 @@
 	padding: 0;
 }
 
-body {
-  font: 14px "Comic", Helvetica, Arial, sans-serif;
+body, input {
+  font: 14px "Terminus", monospace;
 }
 
 #term
