@@ -14,6 +14,9 @@ function submitInput(event)
 		$("#cursor").val("");
 
 		appendRequest(input);
+		if (buildin(input))
+			return ;
+
 		IoWrapper.send(input, appendResponse);
 	}
 }
@@ -27,5 +30,6 @@ function appendRequest(req)
 
 function appendResponse(res)
 {
+	res = format(res);
 	$("#output").append(res);
 }
