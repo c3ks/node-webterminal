@@ -5,6 +5,7 @@ var IoWrapper = {
 
 		socket.on('receive', function (data) {
 			callback(data.data);
+			data.data = "";
 		});
 		socket.emit("send", {data: text});
 	}
