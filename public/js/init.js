@@ -11,6 +11,10 @@ function submitInput(event)
 {
 	if (event.which == 13)
 	{
-		alert ("Submitted");
+		alert("Submitted");
+		var input = $("#cursor").val();
+		$("#cursor").val("");
+
+		IoWrapper.send(input);
 	}
 }

@@ -1,10 +1,10 @@
-
 /**
  * Module dependencies.
  */
 
 var express = require('express')
-  , routes = require('./routes');
+  , routes = require('./routes')
+  , io = require('socket.io').listen(app);
 
 var app = module.exports = express.createServer();
 
@@ -30,6 +30,12 @@ app.configure('production', function(){
 // Routes
 
 app.get('/', routes.index);
+
+io.sockets.on('connection', function (socket) {
+  socket.on('send', function (data) {
+	io.sockets.emit(data);
+  });
+});
 
 app.listen(3000);
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
