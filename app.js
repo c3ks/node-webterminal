@@ -3,7 +3,8 @@
  */
 
 var express = require('express')
-  , routes = require('./routes');
+  , routes = require('./routes')
+  , controllers = require('./controllers');
 
 var app = module.exports = express.createServer()
   , io = require('socket.io').listen(app);
@@ -33,7 +34,10 @@ app.get('/', routes.index);
 
 io.sockets.on('connection', function (socket) {
   socket.on('send', function (data) {
-    socket.emit('receive', {data: data.data});
+    var input = data.data;
+    controllers.mypty(input, function(output) {
+      socket.emit('receive', {data: output});
+	});
   });
 });
 
