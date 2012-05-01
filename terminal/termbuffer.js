@@ -29,18 +29,18 @@ TermBuffer.prototype = {
 			else {
 				if(data[i].attr === undefined)
 					data[i].attr = util.extend({}, this.attr);
-				this._currentLine()[c.x] = data[i];
+				this.currentLine()[c.x] = data[i];
 				if(++c.x >= this.width)
 					this.lineFeed();
 			}
 		}
 	},
 	setChar: function(chr) {
-		this._currentLine()[c.x] = data[i];
+		this.currentLine()[c.x] = data[i];
 	},
 	lineFeed: function(hard) {
 		var c = this.cursor;
-		this._currentLine().terminated = hard;
+		this.currentLine().terminated = hard;
 		c.x = 0;
 		c.y++;
 		if(c.y >= this.height) {
@@ -48,20 +48,27 @@ TermBuffer.prototype = {
 			this.rowOffset++;
 		}
 	},
-	_currentLine: function() {
+	currentLine: function() {
 		var c = this.cursor;
 		if(this.lines[this.rowOffset + c.y] === undefined)
 			this.lines[this.rowOffset + c.y] = [];
 		return this.lines[this.rowOffset + c.y];
 	},
+	lineNumber: function() {
+		return this.rowOffset + this.cursor.y;
+	},
 	delete: function() {
-		this._currentLine()[c.x]
+		this.currentLine()[c.x]
 		// TODO
 	},
 	toString: function() {
 		var ret = Array();
 		for(var i = this.rowOffset; i < this.lines.length; i++) {
-			ret.push(this.lines[i].join(''));
+			var l = [];
+			if(this.lines[i])
+				for(var j = 0; j < this.lines[i].length; j++)
+					l.push(this.lines[i][j] ? this.lines[i][j] : ' ');
+			ret.push(l.join(''));
 		}
 		return ret.join(LF);
 	}

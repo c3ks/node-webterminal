@@ -75,8 +75,10 @@ var commands = {
 	},
 	'l': function(terminal) {
 		terminal.showCursor = false;
+		terminal.onUpdate(terminal);
 	},
 	'h': function(terminal) {
 		terminal.showCursor = true;
+		terminal.onUpdate(terminal);
 	}
 }
