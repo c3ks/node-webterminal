@@ -4,10 +4,8 @@
 
 var connect = require('connect')
   , controllers = require('./controllers')
-  , routes = require('./routes');
-
-var app = connect()
-  , io = require('socket.io').listen(app);
+  , routes = require('./routes')
+  , socketio = require('socket.io');
 
 // Configuration
 
@@ -16,3 +14,4 @@ var app = connect()
 	.use(connect.static('public'))
 	.listen(3000);
 
+var io = socketio.listen(app);
