@@ -3,7 +3,7 @@
  */
 
 var connect = require('connect')
-  , socketio = require('socket.io');
+  , socketio = require('socket.io')
   , controllers = require('./controllers')
   , routes = require('./routes')
 
