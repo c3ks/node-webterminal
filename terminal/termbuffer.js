@@ -1,5 +1,38 @@
 var util = require('./util');
 var LF = '\n'
+var graphics = {
+	'`': '\u25C6',
+	'a': '\u2592',
+	'b': '\u2409',
+	'c': '\u240C',
+	'd': '\u240D',
+	'e': '\u240A',
+	'f': '\u00B0',
+	'g': '\u00B1',
+	'h': '\u2424',
+	'i': '\u240B',
+	'j': '\u2518',
+	'k': '\u2510',
+	'l': '\u250C',
+	'm': '\u2514',
+	'n': '\u253C',
+	'o': '\u23BA',
+	'p': '\u23BB',
+	'q': '\u2500',
+	'r': '\u23BC',
+	's': '\u23BD',
+	't': '\u251C',
+	'u': '\u2524',
+	'v': '\u2534',
+	'w': '\u252C',
+	'x': '\u2502',
+	'y': '\u2264',
+	'z': '\u2265',
+	'{': '\u03C0',
+	'|': '\u2260',
+	'}': '\u00A3',
+	'~': '\u00B7',
+}
 
 function TermBuffer(width, height, opts) {
 	this.cursor = {x:0,y:0};
@@ -12,8 +45,10 @@ function TermBuffer(width, height, opts) {
 		bold: false,
 		underline: false,
 		blink: false,
-		inverse: false
+		inverse: false,
+		graphics: false
 	}
+	this.scrollArea = [0, height - 1];
 	util.extend(this.defaultAttr, opts);
 	this.attr = util.extend({}, this.attr);
 	this.lines = [];
@@ -29,9 +64,7 @@ TermBuffer.prototype = {
 			if(data[i] === LF)
 				this.lineFeed(true);
 			else {
-				if(data[i].attr === undefined)
-					data[i].attr = util.extend({}, this.attr);
-				this.currentLine()[c.x] = data[i];
+				this.currentLine()[c.x] = { chr: data[i], attr: util.extend({}, this.attr) };
 				if(++c.x >= this.width)
 					this.lineFeed();
 			}
@@ -74,17 +107,24 @@ TermBuffer.prototype = {
 			var l = [];
 			if(this.lines[i])
 				for(var j = 0; j < this.lines[i].length; j++)
-					l.push(this.lines[i][j] ? this.lines[i][j] : ' ');
+					if(this.lines[i][j]) {
+						if(this.lines[i][j].attr.graphic && graphics[this.lines[i][j].chr])
+							l.push(graphics[this.lines[i][j].chr]);
+						else
+							l.push(this.lines[i][j].chr);
+					}
+					else
+						l.push(' ')
 			ret.push(l.join(''));
 		}
 		return ret.join(LF);
 	},
 	setCursor: function(obj) {
 		this.diff[this.cursor.y] = true;
-		for(var k in {x:1, y:1}) {
+		var dim = {x:'width', y:'height'};
+		for(var k in dim) {
 			if(obj[k] !== undefined) {
-				obj[k] = Math.min(obj[k], this.width-1);
-				obj[k] = Math.max(obj[k], 0);
+				obj[k] = Math.max(Math.min(obj[k], this[dim[k]]-1), 0);
 				this.cursor[k] = obj[k];
 			}
 		}
@@ -102,6 +142,14 @@ TermBuffer.prototype = {
 			diff[k] = this.lines[parseInt(k) + this.rowOffset] || [];
 		}
 		return diff;
+	},
+	setScrollArea: function(n, m) {
+		if(n === undefined || m === undefined)
+			this.scrollArea = [0, height - 1];
+		else {
+			for(var i = 0; i < 2; i++)
+				this.scrollArea[i] = Math.max(Math.min(arguments[i], this.height - 1), 0);
+		}
 	}
 }
 

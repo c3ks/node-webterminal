@@ -1,6 +1,7 @@
 var util = require('./util');
 var csi = require('./csi').csi;
 var osc = require('./osc').osc;
+var ansi = require('./ansi').ansi;
 var TermBuffer = require('./termbuffer').TermBuffer;
 
 var CHR = {
@@ -18,6 +19,8 @@ function Terminal(width, height) {
 	this.escapeBuffer = null;
 	this.isEscape = false;
 	this.savedCursor = {x:0,y:0};
+	this.title = "";
+	this.leds = {1:false,2:false,3:false,4:false}
 	this.showCursor = true;
 }
 
@@ -310,6 +313,14 @@ Terminal.prototype = {
 				break;
 			case ']':
 				result = osc(data, this);
+				break;
+			case '#':
+			case '<':
+			case '>':
+			case '(':
+			case ')':
+				result = ansi(data, this);
+				break;
 			default:
 				console.log("Unknown escape character ^[" + data[0]);
 				return 0;
@@ -320,6 +331,7 @@ Terminal.prototype = {
 	},
 	write: function(data) {
 		var i = 0;
+		data = data.toString();
 		if(this.escapeBuffer !== null)
 			i = this.escapeWrite(data)
 		for(; i < data.length; i++) {
@@ -345,6 +357,19 @@ Terminal.prototype = {
 			}
 		}
 		this.updated();
+		return this;
+	},
+	setLed: function(n) {
+		if(n == 0)
+			for(var k in this.leds)
+				this.leds[k] = false;
+		else
+			this.leds[n] = true;
+		this.onMetaChange(this, this.title, this.leds);
+		return this;
+	},
+	setScrollArea: function(start, end) {
+		this.getBuffer().setScrollArea(start, end);
 		return this;
 	},
 	resize: function(width, height) {
@@ -441,7 +466,7 @@ Terminal.prototype = {
 	},
 	onBell: function(terminal) {},
 	onUpdate: function(terminal, diff) {},
-	onTitleChange: function(terminal, title) {}
+	onMetaChange: function(terminal, title, leds) {}
 }
 
 exports.Terminal = Terminal;

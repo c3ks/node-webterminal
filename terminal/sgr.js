@@ -5,9 +5,12 @@ exports.sgr = function(terminal, sgr) {
 	var attr = buffer.attr
 	var defaultAttr = buffer.defaultAttr;
 	for(var i = 0; i < sgr.length; i++) {
-		switch(sgr[i]) {
+		switch(parseInt(sgr[i])) {
 		case 0:
 			util.extend(attr, defaultAttr);
+			break;
+		case 1:
+			attr.bold = true;
 			break;
 		case 3:
 			attr.italic = true;

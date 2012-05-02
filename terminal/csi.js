@@ -11,7 +11,7 @@ exports.csi = function(data, terminal) {
 	if(commands[match[3]])
 		commands[match[3]].apply(terminal, args);
 	else {
-		console.log("Unknown CSI-command '"+match[3]+"'");
+		console.log("Unknown CSI-command '"+match[0]+"'");
 		return -1;
 	}
 	return match[0].length;
@@ -65,7 +65,16 @@ var commands = {
 		commands.H(terminal, n);
 	},
 	'm': function(terminal) {
-		sgr(Array.prototype.slice.call(arguments, 1));
+		sgr(terminal, Array.prototype.slice.call(arguments, 1));
+	},
+	'q': function(terminal, n) {
+		terminal.setLed(n);
+	},
+	'r': function(terminal, n, m) {
+		if(n === undefined && m === undefined)
+			terminal.setScrollArea();
+		else
+			terminal.setScrollArea(n-1, m-1);
 	},
 	's': function(terminal) {
 		terminal.curSave();
