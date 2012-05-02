@@ -20,34 +20,34 @@ exports.csi = function(data, terminal) {
 var commands = {
 	'A': function(terminal, n) {
 		n--;
-		terminal.curRel({y: -n});
+		terminal.mvCursor({y: -n});
 	},
 	'B': function(terminal, n) {
 		n--;
-		terminal.curRel({y: n});
+		terminal.mvCursor({y: n});
 	},
 	'C': function(terminal, n) {
 		n--;
-		terminal.curRel({x: n});
+		terminal.mvCursor({x: n});
 	},
 	'D': function(terminal, n) {
 		n--;
-		terminal.curRel({x: -n});
+		terminal.mvCursor({x: -n});
 	},
 	'E': function(terminal, n) {
 		n--;
-		terminal.curRel({y: n}).curAbs({x: 0});
+		terminal.mvCursor({y: n}).setCursor({x: 0});
 	},
 	'F': function(terminal, n) {
 		n--;
-		terminal.curRel({y: -n}).curAbs({x: 0});
+		terminal.mvCursor({y: -n}).setCursor({x: 0});
 	},
 	'G': function(terminal, n) {
 		n--;
-		terminal.curAbs({x: n});
+		terminal.setCursor({x: n});
 	},
 	'H': function(terminal, n, m) {
-		terminal.curAbs({y: n, x: m});
+		terminal.setCursor({y: n, x: m});
 	},
 	'J': function(terminal, n) {
 		terminal.eraseData(n);
@@ -75,10 +75,8 @@ var commands = {
 	},
 	'l': function(terminal) {
 		terminal.showCursor = false;
-		terminal.onUpdate(terminal);
 	},
 	'h': function(terminal) {
 		terminal.showCursor = true;
-		terminal.onUpdate(terminal);
 	}
 }

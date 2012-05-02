@@ -31,7 +31,6 @@ Terminal.prototype = {
 		'#aa00aa',
 		'#00aaaa',
 		'#aaaaaa',
-
 		'#555555',
 		'#ff5555',
 		'#55ff55',
@@ -329,23 +328,23 @@ Terminal.prototype = {
 					this.onBell();
 					break;
 				case CHR.BS:
-					this.curRel({x: -1});
+					this.mvCursor({x: -1});
 					this.currentBuffer().setChar(' ');
 					break;
 				case CHR.CR:
-					this.curAbs({x: 0});
+					this.setCursor({x: 0});
 					break;
 				case CHR.ESCAPE:
 					i += this.escapeWrite(data.slice(++i));
 					break;
 				case CHR.DEL:
-					// TODO
+					this.currentBuffer().delete(1);
 					break;
 				default:
 					this.getBuffer().write(data[i]);
 			}
 		}
-		this.onUpdate(this)
+		this.updated();
 		return this;
 	},
 	resize: function(width, height) {
@@ -356,29 +355,24 @@ Terminal.prototype = {
 				var line = oldBuffer.lines[i]
 				newBuffer.write(line);
 				if(line.terminated)
-					newBuffer.lineFeed();
+					newBuffer.lineFeed(true);
 				newBuffer.cursor = {x:0, y:0};
 			}
 			this.buffers[k] = newBuffer
 		}
-		this.onUpdate(this)
+		this.updated();
 	},
-	curRel: function(obj) {
+	mvCursor: function(obj) {
 		obj = util.extend({}, obj);
-		obj.x = (obj.x === undefined ? obj.x : 0) + this.getBuffer().cursor.x;
-		obj.y = (obj.y === undefined ? obj.y : 0) + this.getBuffer().cursor.y;
-		this.onUpdate(this)
-		return this.curAbs(obj);
+		obj.x = (obj.x !== undefined ? obj.x : 0) + this.getBuffer().cursor.x;
+		obj.y = (obj.y !== undefined ? obj.y : 0) + this.getBuffer().cursor.y;
+		this.updated();
+		return this.setCursor(obj);
 	},
-	curAbs: function(obj) {
+	setCursor: function(obj) {
 		var buffer = this.getBuffer();
-		obj.x = Math.min(obj.x, buffer.width-1);
-		obj.y = Math.min(obj.y, buffer.height-1);
-		if(obj.x !== undefined)
-			buffer.cursor.x = obj.x;
-		if(obj.y !== undefined)
-			buffer.cursor.y = obj.y;
-		this.onUpdate(this)
+		buffer.setCursor(obj);
+		this.updated();
 		return this;
 	},
 	getBuffer: function() {
@@ -426,6 +420,7 @@ Terminal.prototype = {
 			line.splice(0, line.length);
 			break;
 		}
+		this.updated();
 		return this;
 	},
 	saveCur: function() {
@@ -433,10 +428,19 @@ Terminal.prototype = {
 		return this;
 	},
 	restCur: function() {
-		return this.curAbs(this.savedCursor);
+		return this.setCursor(this.savedCursor);
+	},
+	updated: function() {
+		this.onUpdate(this, this.getBuffer().dumpDiff());
+	},
+	cursorVisible: function(visible) {
+		this.showCursor = visible;
+		var diff = {};
+		diff[getBuffer().lineNumber()] = buffer.currentLine();
+		onUpdate(this, diff);
 	},
 	onBell: function(terminal) {},
-	onUpdate: function(terminal) {},
+	onUpdate: function(terminal, diff) {},
 	onTitleChange: function(terminal, title) {}
 }
 

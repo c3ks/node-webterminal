@@ -3,9 +3,9 @@
  */
 
 var connect = require('connect')
+  , socketio = require('socket.io');
   , controllers = require('./controllers')
   , routes = require('./routes')
-  , socketio = require('socket.io');
 
 // Configuration
 

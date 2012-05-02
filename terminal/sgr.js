@@ -20,7 +20,12 @@ exports.sgr = function(terminal, sgr) {
 			attr.blink = true;
 			break;
 		case 7:
-			attr.inverse = true;
+			if(!attr.inverse) {
+				attr.inverse = true;
+				var tmp = attr.fg;
+				attr.fg = attr.bg;
+				attr.bg = tmp;
+			}
 			break;
 		case 22:
 			attr.bg = defaultAttr.bg;
@@ -37,7 +42,12 @@ exports.sgr = function(terminal, sgr) {
 			attr.blink = false;
 			break
 		case 27:
-			attr.inverse = false;
+			if(attr.inverse) {
+				attr.inverse = false;
+				var tmp = attr.fg;
+				attr.fg = attr.bg;
+				attr.bg = tmp;
+			}
 			break;
 		case 38:
 			if(sgr[i+1] == 5)
