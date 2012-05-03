@@ -340,11 +340,11 @@ Terminal.prototype = {
 					this.onBell();
 					break;
 				case CHR.BS:
-					this.mvCursor({x: -1});
-					this.currentBuffer().setChar(' ');
+					this.getBuffer().mvCur(-1, 0);
+					this.getBuffer().setChar(' ');
 					break;
 				case CHR.CR:
-					this.setCursor({x: 0});
+					this.getBuffer().setCur({x: 0});
 					break;
 				case CHR.ESCAPE:
 					i += this.escapeWrite(data.slice(++i));
