@@ -456,7 +456,7 @@ Terminal.prototype = {
 		return this.setCursor(this.savedCursor);
 	},
 	updated: function() {
-		this.onUpdate(this, this.getBuffer().dumpDiff());
+		this.onUpdate(this, this.getBuffer());
 	},
 	cursorVisible: function(visible) {
 		this.showCursor = visible;

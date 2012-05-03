@@ -1,5 +1,7 @@
 var util = require('./util');
-var LF = '\n'
+
+var LF = '\n';
+
 var graphics = {
 	'`': '\u25C6',
 	'a': '\u2592',
@@ -32,14 +34,19 @@ var graphics = {
 	'|': '\u2260',
 	'}': '\u00A3',
 	'~': '\u00B7',
-}
+};
 
-function TermBuffer(width, height, opts) {
+function TermBuffer(width, height, defaultAttr) {
+	this.width = width;
+	this.height = height;
+
+	this.scrollArea = [0, height - 1];
+	this.scrollBack = [];
+	this.buffer = []
+	this.diff = {}
 	this.cursor = {x:0,y:0};
-	this.width = width || 80;
-	this.height = height || 24;
-	this.rowOffset = 0;
-	this.defaultAttr = {
+
+	this.defaultAttr = util.extend({
 		fg: 15,
 		bg: 0,
 		bold: false,
@@ -47,110 +54,186 @@ function TermBuffer(width, height, opts) {
 		blink: false,
 		inverse: false,
 		graphics: false
-	}
-	this.scrollArea = null;
-	util.extend(this.defaultAttr, opts);
-	this.attr = util.extend({}, this.attr);
-	this.lines = [];
-	this.diff = {};
+	}, defaultAttr);
+	this.attr = util.extend({}, this.defaultAttr);
 }
+
 TermBuffer.prototype = {
 	write: function(data) {
-		if(data.length === 0)
-			return;
+		var c = this.cursor;
 		
-		var c = this.cursor;
 		for(var i = 0; i < data.length; i++) {
-			if(data[i] === LF)
-				this.lineFeed(true);
-			else {
-				this.currentLine()[c.x] = { chr: data[i], attr: util.extend({}, this.attr) };
-				if(++c.x >= this.width)
-					this.lineFeed();
+			if(data[i] === LF) {
+				this.getLine().soft = false;
+				this.insertLine(true);
+				this.mvCur(0,1);this.setCur({x:0})
 			}
-			this.diff.lines[c.y] = true;
+			else {
+				if(this.attr.graphic === true && graphics[data[i]] !== undefined)
+					this.setChar(graphics[data[i]]);
+				else
+					this.setChar(data[i]);
+
+				if(this.mvCur(1, 0) == false) {
+					this.getLine().soft = true;
+					this.insertLine(true);
+					this.mvCur(0, 1);this.setCur({x:0})
+				}
+			}
 		}
 	},
-	lineFeed: function(hard) {
-		var c = this.cursor;
-		this.currentLine().terminated = hard;
-		c.x = 0;
-		this.diff.lines[c.y] = true;
-		c.y++;
-		this.diff.lines[c.y] = true;
-		if(this.scrollArea !== null) {
-			
+	setChar: function(c) {
+		this.getLine()[this.cursor.x] = typeof c === 'string' ? {
+			chr: c,
+			attr: util.extend({}, this.attr)
+		} : c;
+	},
+	eraseData: function(type, n) {
+		n = n === undefined ? this.getLineNumber() : n;
+		switch(type) {
+		case 0:
+		case 'toEnd':
+		default:
+			if(this.scrollArea[1] === this.height - 1)
+				this.buffer.splice(n+1);
+			else
+				for(var i = n + 1; i <= this.scrollArea[1]; i++)
+					this.buffer[i] = [];
+			break;
+		case 1:
+		case 'toBegin':
+			for(var i = this.scrollArea[0]; i < n; i++)
+				this.buffer[i] = [];
+			break;
+			break;
+		case 2:
+		case 'entire':
+			this.eraseData('toBegin', n).eraseData('toEnd', n);
+			break;
 		}
-		else if(c.y >= this.height) {
-			c.y = this.height - 1;
-			this.diff.scrolled++;
-			this.rowOffset++;
+		return this.eraseLine(type);
+	},
+	eraseLine: function(type, n) {
+		var line = this.getLine();
+		switch(type) {
+		case 0:
+		case 'toEnd':
+		default:
+			line.splice(this.cursor.x, line.length);
+			break;
+		case 1:
+		case 'toBegin':
+			for(var i = 0; i < this.cursor.x; i++)
+				delete line[i];
+			break;
+		case 2:
+		case 'entire':
+			line.splice(0, line.length);
+			break;
+		}
+		return this;
+	},
+	getLineNumber: function(n) {
+		if(n === undefined)
+			n = this.cursor.y;
+		if(n > this.scrollArea[1] - this.scrollArea[0] || n < 0)
+			return -1;
+		else
+			return this.scrollArea[0] + n;
+	},
+	getLine: function(n) {
+		n = this.getLineNumber(n);
+		if(n < 0)
+			return null;
+		else if(this.buffer[n])
+			return this.buffer[n];
+		else
+			return (this.buffer[n] = []);
+	},
+	insertLine: function(insertAfter, n) {
+		n = n === undefined ? this.getLineNumber() : n;
+		if(insertAfter)
+			n++;
+		var after = this.buffer.splice(n);
+		var newline = [];
+		this.buffer.push(newline);
+		this.buffer.push.apply(this.buffer, after);
+		if(this.buffer.length > this.height) {
+			var oversize = this.buffer.length - this.height
+			if(n - 1 == this.scrollArea[1]) {
+				var tail = this.buffer.splice(this.scrollArea[0], oversize);
+				if(this.scrollArea[0] == 0)
+					this.scrollBack.push.apply(this.scrollBack, tail);
+			}
+			else
+				this.buffer.splice(this.scrollArea[1], oversize);
 		}
 	},
-	currentLine: function() {
-		var n = this.lineNumber()
-		if(this.lines[n] === undefined)
-			this.lines[n] = [];
-		return this.lines[n];
+	deleteLine: function(n) {
+		n = n === undefined ? this.getLineNumber() : n;
+		this.buffer.splice(n + this.scrollArea[0], 1)
+		if(this.scrollArea[1] != this.height)
+			this.insertLine(this.scrollArea[1] - this.scrollArea[0]);
 	},
-	lineNumber: function() {
-		return this.rowOffset + this.cursor.y;
+	mvCur: function(x, y) {
+		var obj = {x: this.cursor.x + x, y: this.cursor.y + y};
+		return this.setCur(obj);
 	},
-	delete: function(n) {
-		var c = this.cursor;
-		this.currentLine().splice(c.x, n);
+	setCur: function(obj) {
+		var inbounds = 0;
+		if(obj.x < 0)
+			obj.x = 0;
+		else if(obj.x >= this.width)
+			obj.x = this.width - 1
+		else
+			inbounds++
+
+		if(obj.y < 0)
+			obj.y = 0;
+		else if(obj.y > this.scrollArea[1] - this.scrollArea[0])
+			obj.y = this.scrollArea[1] - this.scrollArea[0];
+		else
+			inbounds++
+
+		util.extend(this.cursor, obj);
+		return inbounds === 2;
+	},
+	dump: function(withScrollBack) {
+		var ret = []
+		if(withScrollBack)
+			ret.push.apply(ret, this.scrollBack);
+		ret.push.apply(ret, this.buffer);
+		return ret;
 	},
 	toString: function() {
-		var ret = Array();
-		for(var i = this.rowOffset; i < this.lines.length; i++) {
-			var l = [];
-			if(this.lines[i])
-				for(var j = 0; j < this.lines[i].length; j++)
-					if(this.lines[i][j]) {
-						if(this.lines[i][j].attr.graphic && graphics[this.lines[i][j].chr])
-							l.push(graphics[this.lines[i][j].chr]);
-						else
-							l.push(this.lines[i][j].chr);
-					}
-					else
-						l.push(' ')
-			ret.push(l.join(''));
+		var ret = []
+		for(var i = 0; i < this.buffer.length; i++) {
+			var line = []
+			for(var j = 0; j < this.buffer[i].length; j++) {
+				line.push(this.buffer[i][j] ? this.buffer[i][j].chr : ' ');
+			}
+			ret.push(line.join(''));
 		}
 		return ret.join(LF);
 	},
-	setCursor: function(obj) {
-		this.diff.lines[this.cursor.y] = true;
-		var dim = {x:'width', y:'height'};
-		for(var k in dim) {
-			if(obj[k] !== undefined) {
-				obj[k] = Math.max(Math.min(obj[k], this[dim[k]]-1), 0);
-				this.cursor[k] = obj[k];
-			}
+	resize: function(width, height) {
+		var old = this.scrollBack;
+		old.push.apply(old, this.buffer);
+		var oldCursor = this.cursor;
+		this.cursor = {x:0,y:0}
+		this.height = height;
+		this.width = width;
+		this.scrollArea = [ 0, this.height - 1]
+		this.buffer = [];
+		this.scrollBack = [];
+
+		for(var i = 0; i < old.length; i++) {
+			this.write(old[i])
+			if(!old[i].soft)
+				this.write(LF);
 		}
-		this.diff.lines[this.cursor.y] = true;
-	},
-	dump: function(withScrollback) {
-		if(withScrollback)
-			return this.lines;
-		return this.lines.slice(this.rowOffset);
-	},
-	dumpDiff: function() {
-		var diff = this.diff;
-		this.diff = { scrolled: 0, lines: {} };
-		for(var k in diff.lines) {
-			diff.lines[k] = this.lines[parseInt(k) + this.rowOffset] || [];
-		}
-		return diff;
-	},
-	setScrollArea: function(n, m) {
-		if(n === undefined || m === undefined || n > m)
-			this.scrollArea = null;
-		else {
-			this.scrollArea = {};
-			for(var k in {top:1, bottom:1})
-				this.scrollArea[k] = Math.max(Math.min(arguments[i], this.height - 1), 0);
-		}
+		this.setCur(oldCursor);
 	}
 }
 
-exports.TermBuffer = TermBuffer;
+exports.TermBuffer = TermBuffer
