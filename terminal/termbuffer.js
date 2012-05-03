@@ -169,6 +169,13 @@ TermBuffer.prototype = {
 				this.buffer.splice(this.scrollArea[1], oversize);
 		}
 	},
+	setScrollArea: function(n, m) {
+		if(n === undefined || m === undefined)
+			this.scrollArea = [ 0, this.height - 1 ];
+		else {
+			this.scrollArea = [ Math.max(n, 0), Math.min(m, this.height - 1) ];
+		}
+	},
 	deleteLine: function(n) {
 		n = n === undefined ? this.getLineNumber() : n;
 		this.buffer.splice(n + this.scrollArea[0], 1)
@@ -209,9 +216,10 @@ TermBuffer.prototype = {
 		var ret = []
 		for(var i = 0; i < this.buffer.length; i++) {
 			var line = []
-			for(var j = 0; j < this.buffer[i].length; j++) {
-				line.push(this.buffer[i][j] ? this.buffer[i][j].chr : ' ');
-			}
+			if(this.buffer[i])
+				for(var j = 0; j < this.buffer[i].length; j++) {
+					line.push(this.buffer[i][j] ? this.buffer[i][j].chr : ' ');
+				}
 			ret.push(line.join(''));
 		}
 		return ret.join(LF);

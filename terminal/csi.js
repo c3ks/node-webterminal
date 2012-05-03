@@ -7,7 +7,7 @@ exports.csi = function(data, terminal) {
 	if(match === null)
 		return 0;
 	var args = (match[2] || '1').split(';');
-	args.unshift(terminal)
+	args.unshift(terminal, terminal.getBuffer())
 	if(commands[match[3]])
 		commands[match[3]].apply(terminal, args);
 	else {
@@ -18,74 +18,71 @@ exports.csi = function(data, terminal) {
 }
 
 var commands = {
-	'A': function(terminal, n) {
+	'A': function(terminal, buffer, n) {
 		n--;
-		terminal.mvCursor({y: -n});
+		buffer.mvCur(0, -n);
 	},
-	'B': function(terminal, n) {
+	'B': function(terminal, buffer, n) {
 		n--;
-		terminal.mvCursor({y: n});
+		buffer.mvCur(0, n);
 	},
-	'C': function(terminal, n) {
+	'C': function(terminal, buffer, n) {
 		n--;
-		terminal.mvCursor({x: n});
+		buffer.mvCur(n, 0);
 	},
-	'D': function(terminal, n) {
+	'D': function(terminal, buffer, n) {
+		terminal.mvCur(-n, 0);
+	},
+	'E': function(terminal, buffer, n) {
 		n--;
-		terminal.mvCursor({x: -n});
+		buffer.mvCur(0, n).setCur({x: 0});
 	},
-	'E': function(terminal, n) {
+	'F': function(terminal, buffer, n) {
 		n--;
-		terminal.mvCursor({y: n}).setCursor({x: 0});
+		buffer.mvCur(0, -n).setCur({x: 0});
 	},
-	'F': function(terminal, n) {
+	'G': function(terminal, buffer, n) {
 		n--;
-		terminal.mvCursor({y: -n}).setCursor({x: 0});
+		buffer.setCur({x: n});
 	},
-	'G': function(terminal, n) {
-		n--;
-		terminal.setCursor({x: n});
+	'H': function(terminal, buffer, n, m) {
+		n--; m--;
+		buffer.setCur({y: n, x: m});
 	},
-	'H': function(terminal, n, m) {
-		terminal.setCursor({y: n, x: m});
+	'J': function(terminal, buffer, n) {
+		buffer.eraseData(n);
 	},
-	'J': function(terminal, n) {
-		terminal.eraseData(n);
+	'K': function(terminal, buffer, n) {
+		buffer.eraseLine(n);
 	},
-	'K': function(terminal, n) {
-		terminal.eraseLine(n);
-	},
-	'S': function(terminal, n) {
+	'S': function(terminal, buffer, n) {
 		terminal.scroll(-n);
 	},
-	'T': function(terminal, n) {
+	'T': function(terminal, buffer, n) {
 		terminal.scroll(n);
 	},
-	'f': function(terminal, n) {
+	'f': function(terminal, buffer, n) {
 		commands.H(terminal, n);
 	},
-	'm': function(terminal) {
-		sgr(terminal, Array.prototype.slice.call(arguments, 1));
+	'm': function(terminal, buffer) {
+		sgr(terminal, Array.prototype.slice.call(arguments, 2));
 	},
-	'q': function(terminal, n) {
+	'q': function(terminal, buffer, n) {
 		terminal.setLed(n);
 	},
-	'r': function(terminal, n, m) {
-		if(n === undefined && m === undefined)
-			terminal.setScrollArea();
-		else
-			terminal.setScrollArea(n-1, m-1);
+	'r': function(terminal, buffer, n, m) {
+		buffer.setScrollArea(n-1, m-1);
 	},
-	's': function(terminal) {
+	's': function(terminal, buffer) {
 		terminal.curSave();
 	},
-	'u': function(terminal) {
+	'u': function(terminal, buffer) {
 		terminal.curRest();
 	},
-	'l': function(terminal) {
+	'l': function(terminal, buffer) {
 		terminal.showCursor = false;
 	},
-	'h': function(terminal) {
+	'h': function(terminal, buffer) {
 		terminal.showCursor = true;
 	}
 }

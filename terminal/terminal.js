@@ -368,85 +368,16 @@ Terminal.prototype = {
 		this.onMetaChange(this, this.title, this.leds);
 		return this;
 	},
-	setScrollArea: function(start, end) {
-		this.getBuffer().setScrollArea(start, end);
-		return this;
-	},
 	resize: function(width, height) {
 		for(var k in this.buffers) {
-			var oldBuffer = this.buffers[k];
-			var newBuffer = new TermBuffer(width, height);
-			for(var i = 0; i < oldBuffer.lines.length; i++) {
-				var line = oldBuffer.lines[i]
-				newBuffer.write(line);
-				if(line.terminated)
-					newBuffer.lineFeed(true);
-				newBuffer.cursor = {x:0, y:0};
-			}
-			this.buffers[k] = newBuffer
+			this.buffers[k].resize(width, height);
 		}
-		this.updated();
-	},
-	mvCursor: function(obj) {
-		obj = util.extend({}, obj);
-		obj.x = (obj.x !== undefined ? obj.x : 0) + this.getBuffer().cursor.x;
-		obj.y = (obj.y !== undefined ? obj.y : 0) + this.getBuffer().cursor.y;
-		this.updated();
-		return this.setCursor(obj);
-	},
-	setCursor: function(obj) {
-		var buffer = this.getBuffer();
-		buffer.setCursor(obj);
-		this.updated();
-		return this;
 	},
 	getBuffer: function() {
 		return this.buffers[this.currentBuffer];
 	},
 	toString: function() {
 		return this.getBuffer().toString();
-	},
-	eraseData: function(type) {
-		var buffer = this.getBuffer();
-		switch(type) {
-		case 0:
-		case 'toEnd':
-		default:
-			buffer.lines.splice(buffer.lineNumber()+1, buffer.lines.length);
-			break;
-		case 1:
-		case 'toBegin':
-			for(var i = buffer.rowOffset; i < buffer.lineNumber(); i++)
-				delete buffer.lines[i];
-			break;
-		case 2:
-		case 'entire':
-			buffer.lines.splice(buffer.rowOffset, buffer.lines.length);
-			break;
-		}
-		return this.eraseLine(type);
-	},
-	eraseLine: function(type) {
-		var buffer = this.getBuffer()
-		var line = buffer.currentLine();
-		switch(type) {
-		case 0:
-		case 'toEnd':
-		default:
-			line.splice(buffer.cursor.x, line.length);
-			break;
-		case 1:
-		case 'toBegin':
-			for(var i = 0; i < buffer.cursor.x; i++)
-				delete line[i];
-			break;
-		case 2:
-		case 'entire':
-			line.splice(0, line.length);
-			break;
-		}
-		this.updated();
-		return this;
 	},
 	saveCur: function() {
 		this.savedCursor = this.getBuffer().cursor;

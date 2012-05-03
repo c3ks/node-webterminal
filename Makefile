@@ -16,6 +16,10 @@ build-dev:
 		-g terminal \
 		-d -m terminal -b terminal/ \
 		terminal > dist/terminal-dev.js
+	@./node_modules/.bin/browserbuild \
+		-g termbuffer \
+		-d -m termbuffer -b terminal/ \
+		terminal > dist/termbuffer-dev.js
 
 test:
 	@./node_modules/.bin/mocha \

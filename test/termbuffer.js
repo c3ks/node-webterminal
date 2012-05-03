@@ -1,5 +1,5 @@
 var TermBuffer = termbuffer.TermBuffer
-describe('terminal', function() {
+describe('TermBuffer', function() {
 	it("creates TermBuffer", function() {
 		expect(new TermBuffer()).to.have.property('buffer')
 		expect(new TermBuffer().toString()).to.be("")
