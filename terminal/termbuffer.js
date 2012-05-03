@@ -48,7 +48,7 @@ function TermBuffer(width, height, opts) {
 		inverse: false,
 		graphics: false
 	}
-	this.scrollArea = [0, height - 1];
+	this.scrollArea = null;
 	util.extend(this.defaultAttr, opts);
 	this.attr = util.extend({}, this.attr);
 	this.lines = [];
@@ -68,23 +68,22 @@ TermBuffer.prototype = {
 				if(++c.x >= this.width)
 					this.lineFeed();
 			}
-			this.diff[c.y] = true;
+			this.diff.lines[c.y] = true;
 		}
-	},
-	setChar: function(chr) {
-		var c = this.cursor;
-		this.diff[c.y] = true;
-		this.currentLine()[c.x] = data[i];
 	},
 	lineFeed: function(hard) {
 		var c = this.cursor;
 		this.currentLine().terminated = hard;
 		c.x = 0;
-		this.diff[c.y] = true;
+		this.diff.lines[c.y] = true;
 		c.y++;
-		this.diff[c.y] = true;
-		if(c.y >= this.height) {
+		this.diff.lines[c.y] = true;
+		if(this.scrollArea !== null) {
+			
+		}
+		else if(c.y >= this.height) {
 			c.y = this.height - 1;
+			this.diff.scrolled++;
 			this.rowOffset++;
 		}
 	},
@@ -120,7 +119,7 @@ TermBuffer.prototype = {
 		return ret.join(LF);
 	},
 	setCursor: function(obj) {
-		this.diff[this.cursor.y] = true;
+		this.diff.lines[this.cursor.y] = true;
 		var dim = {x:'width', y:'height'};
 		for(var k in dim) {
 			if(obj[k] !== undefined) {
@@ -128,7 +127,7 @@ TermBuffer.prototype = {
 				this.cursor[k] = obj[k];
 			}
 		}
-		this.diff[this.cursor.y] = true;
+		this.diff.lines[this.cursor.y] = true;
 	},
 	dump: function(withScrollback) {
 		if(withScrollback)
@@ -137,18 +136,19 @@ TermBuffer.prototype = {
 	},
 	dumpDiff: function() {
 		var diff = this.diff;
-		this.diff = {};
-		for(var k in diff) {
-			diff[k] = this.lines[parseInt(k) + this.rowOffset] || [];
+		this.diff = { scrolled: 0, lines: {} };
+		for(var k in diff.lines) {
+			diff.lines[k] = this.lines[parseInt(k) + this.rowOffset] || [];
 		}
 		return diff;
 	},
 	setScrollArea: function(n, m) {
-		if(n === undefined || m === undefined)
-			this.scrollArea = [0, height - 1];
+		if(n === undefined || m === undefined || n > m)
+			this.scrollArea = null;
 		else {
-			for(var i = 0; i < 2; i++)
-				this.scrollArea[i] = Math.max(Math.min(arguments[i], this.height - 1), 0);
+			this.scrollArea = {};
+			for(var k in {top:1, bottom:1})
+				this.scrollArea[k] = Math.max(Math.min(arguments[i], this.height - 1), 0);
 		}
 	}
 }
