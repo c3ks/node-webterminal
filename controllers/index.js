@@ -1,9 +1,32 @@
-var exec = require('child_process').exec;
-var child;
+var pty = require("pty.js");
 
-exports.mypty = function(input, callback) {
-  child = exec(input, function (error, stdout, stderr) {
-    if (error === null)
-      callback(stdout);
-  });
+
+exports.mypty = function(socket) {
+
+	var proc = pty.spawn("sh", [], {
+		name: "dumb",
+		cols: 80,
+		rows: 24,
+		cwd: process.env.HOME,
+		env: process.env
+	});
+
+	proc.on("data", function(data) {
+		socket.emit("ptydata", data);
+	});
+
+	proc.on("exit", function() {
+		socket.emit("ptyexit");
+	});
+
+
+	socket.on("input", function(input) {
+		console.log("Input received");
+		console.log(input);
+		proc.write(input);
+	});
+
+	socket.on("disconnect", function() {
+		proc.end();
+	});
 };

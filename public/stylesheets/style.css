@@ -36,7 +36,14 @@ div {
 	width: 95%;
 }
 
-#promptPath {
-	float: left;
-	margin-right: 10px;
+#log
+{
+	background: #FFF;
+	bottom: 0;
+	color: #000;
+	position: fixed;
+	right: 0;
+	top: 0;
+	width: 400px;
+	overflow: auto;
 }

@@ -1,12 +1,14 @@
-var IoWrapper = {
+function IoWrapper (callback) {
+	this.socket = io.connect('http://localhost');
+	this.socket.on("ptydata", function (data) {
+		callback(data);
+		data.data = "";
+	});
+}
 
-	send: function (text, callback) {
-		var socket = io.connect('http://localhost');
-
-		socket.on('receive', function (data) {
-			callback(data.data);
-			data.data = "";
-		});
-		socket.emit("send", {data: text});
+IoWrapper.prototype = {
+	send: function (text) {
+		console.debug(text);
+		this.socket.emit("input", text);
 	}
 };

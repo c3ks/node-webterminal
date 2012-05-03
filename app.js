@@ -15,3 +15,8 @@ var app = connect()
 	.listen(3000);
 
 var io = socketio.listen(app);
+
+io.sockets.on('connection', function(socket) {
+	console.log("New Connection opened");
+	controllers.mypty(socket); 
+});

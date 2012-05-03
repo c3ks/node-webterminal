@@ -1,35 +1,28 @@
+var iowrapper;
+
 $(document).ready(init);
+
 
 function init()
 {
-	$("body").keypress(submitInput);
-	$("#cursor").focus();
+	iowrapper = new IoWrapper(parseResponse);
+	$("body").on("keypress", submitInput);
 }
+
 
 function submitInput(event)
 {
-	if (event.which == 13)
-	{
-		var input = $("#cursor").val();
-		$("#cursor").val("");
+	var chr;
+		chr = String.fromCharCode(event.which)
 
-		appendRequest(input);
-		if (buildin(input))
-			return ;
-
-		IoWrapper.send(input, appendResponse);
-	}
+	iowrapper.send(chr, parseResponse);
 }
 
-function appendRequest(req)
+function parseResponse(res)
 {
-	$("#output").append("$ ");
-	$("#output").append(req);
-	$("#output").append("<br />");
-}
+	$("#log").append(res);
+	$("#log").append("<br />");
 
-function appendResponse(res)
-{
 	res = format(res);
-	$("#output").append(res);
+	$("#term").append(res);
 }
