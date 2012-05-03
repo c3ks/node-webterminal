@@ -396,7 +396,7 @@ Terminal.prototype = {
 		onUpdate(this, diff);
 	},
 	onBell: function(terminal) {},
-	onUpdate: function(terminal, diff) {},
+	onUpdate: function(terminal, buffer) {},
 	onMetaChange: function(terminal, title, leds) {}
 }
 
