@@ -18,11 +18,11 @@ function submitInput(event)
 	iowrapper.send(chr, parseResponse);
 }
 
-function parseResponse(res)
+function parseResponse(res, term)
 {
 	$("#log").append(res);
 	$("#log").append("<br />");
 
-	res = format(res);
-	$("#term").append(res);
+	//res = format(res);
+	$("#term").text(term.toString());
 }

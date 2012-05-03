@@ -4,7 +4,7 @@ var pty = require("pty.js");
 exports.mypty = function(socket) {
 
 	var proc = pty.spawn("sh", [], {
-		name: "dumb",
+		name: "xterm",
 		cols: 80,
 		rows: 24,
 		cwd: process.env.HOME,
