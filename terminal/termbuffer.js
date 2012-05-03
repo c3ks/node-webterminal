@@ -88,6 +88,15 @@ TermBuffer.prototype = {
 			attr: util.extend({}, this.attr)
 		} : c;
 	},
+	clear: function() {
+		var args = [this.scrollArea[0], this.scrollArea[1] + 1]
+		if(this.scrollArea[1] !== this.height - 1) {
+			args.push.apply(args, new Array(this.scrollArea[1] - this.scrollArea[0] + 1));
+		}
+		var leftover = this.buffer.splice.apply(this.buffer, args);
+		if(this.scrollArea[0] === 0)
+			this.scrollBack.push.apply(this.scrollArea, leftover);
+	},
 	eraseData: function(type, n) {
 		n = n === undefined ? this.getLineNumber() : n;
 		switch(type) {
