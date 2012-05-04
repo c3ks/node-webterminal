@@ -263,7 +263,7 @@ TermBuffer.prototype = {
 			  , oldIndex = this.oldBuffer.indexOf(line)
 			  , newIndex = this.buffer.indexOf(oldLine);
 			if((oldIndex === -1 && newIndex === -1))
-				diff[i] = {act:'c', line: line}
+				diff[i] = {act:i >= this.oldBuffer.length ? '+' : 'c', line: line}
 			else if(newIndex === -1)
 				diff[i] = {act:'-'}
 			else if(oldIndex === -1)
