@@ -22,6 +22,7 @@ function parseResponse(res, term)
 {
 	$("#log").append(res);
 	$("#log").append("<br />");
+	$("#log").append($("<pre>").text(JSON.stringify(term.getBuffer().dumpDiff())))
 
 	//res = format(res);
 	$("#term").text(term.toString());

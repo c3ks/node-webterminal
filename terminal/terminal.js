@@ -314,16 +314,10 @@ Terminal.prototype = {
 			case ']':
 				result = osc(data, this);
 				break;
-			case '#':
-			case '<':
-			case '>':
-			case '(':
-			case ')':
-				result = ansi(data, this);
-				break;
 			default:
-				console.log("Unknown escape character ^[" + data[0]);
-				return 0;
+				result = ansi(data, this);
+				if(result === -1)
+					console.log("Unknown escape character ^[" + data[0])
 		}
 		if(result == 0)
 			this.escapeBuffer = null;
@@ -337,7 +331,7 @@ Terminal.prototype = {
 		for(; i < data.length; i++) {
 			switch(data[i]) {
 				case CHR.BELL:
-					this.onBell();
+					this.onBell(this);
 					break;
 				case CHR.BS:
 					this.getBuffer().mvCur(-1, 0);
@@ -365,7 +359,7 @@ Terminal.prototype = {
 				this.leds[k] = false;
 		else
 			this.leds[n] = true;
-		this.onMetaChange(this, this.title, this.leds);
+		this.metachanged();
 		return this;
 	},
 	resize: function(width, height) {
@@ -388,6 +382,9 @@ Terminal.prototype = {
 	},
 	updated: function() {
 		this.onUpdate(this, this.getBuffer());
+	},
+	metachanged: function() {
+		this.onMetaChange(this, this.title, this.leds);
 	},
 	cursorVisible: function(visible) {
 		this.showCursor = visible;
