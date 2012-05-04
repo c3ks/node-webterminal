@@ -18,33 +18,41 @@ exports.csi = function(data, terminal) {
 }
 
 var commands = {
+	'@': function(terminal, buffer, mod, n) {
+		n = n || 1;
+		buffer.insertSpace(n);
+	},
 	'A': function(terminal, buffer, mod, n) {
-		n = n === undefined ? 0 : n - 1;
+		n = n || 1;
 		buffer.mvCur(0, -n);
 	},
 	'B': function(terminal, buffer, mod, n) {
-		n = n === undefined ? 0 : n - 1;
+		n = n || 1;
 		buffer.mvCur(0, n);
 	},
 	'C': function(terminal, buffer, mod, n) {
-		n = n === undefined ? 0 : n - 1;
+		n = n || 1;
 		buffer.mvCur(n, 0);
 	},
 	'D': function(terminal, buffer, mod, n) {
-		n = n === undefined ? 0 : n - 1;
+		n = n || 1;
 		terminal.mvCur(-n, 0);
 	},
 	'E': function(terminal, buffer, mod, n) {
-		n = n === undefined ? 0 : n - 1;
+		n = n || 1;
 		buffer.mvCur(0, n).setCur({x: 0});
 	},
 	'F': function(terminal, buffer, mod, n) {
-		n = n === undefined ? 0 : n - 1;
+		n = n || 1;
 		buffer.mvCur(0, -n).setCur({x: 0});
 	},
 	'G': function(terminal, buffer, mod, n) {
 		n = n === undefined ? 0 : n - 1;
 		buffer.setCur({x: n});
+	},
+	'I': function(terminal, buffer, mod, n) {
+		n = n || 1;
+		buffer.mvCur(n, 0, 'tabstop');
 	},
 	'H': function(terminal, buffer, mod, n, m) {
 		n = n === undefined ? 0 : n - 1;

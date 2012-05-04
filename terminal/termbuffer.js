@@ -45,6 +45,7 @@ function TermBuffer(width, height, defaultAttr) {
 	this.buffer = []
 	this.oldBuffer = [];
 	this.cursor = {x:0,y:0};
+	this.cursorLine = null;
 
 	this.defaultAttr = util.extend({
 		fg: 15,
@@ -54,7 +55,6 @@ function TermBuffer(width, height, defaultAttr) {
 		blink: false,
 		inverse: false,
 		graphics: false,
-		cursor: false
 	}, defaultAttr);
 	this.attr = util.extend({}, this.defaultAttr);
 }
@@ -84,7 +84,8 @@ TermBuffer.prototype = {
 		this.getLine().soft = soft;
 		if(this.cursor.y == this.scrollArea[1])
 			this.insertLine(true);
-		this.mvCur(0, 1);this.setCur({x:0})
+		this.mvCur(0, 1);
+		this.setCur({x:0})
 		this.getLine();
 	},
 	editChar: function(action) {
@@ -166,6 +167,20 @@ TermBuffer.prototype = {
 		else
 			return (this.buffer[n] = []);
 	},
+	insertSpace: function(cnt) {
+		var line = this.getLine();
+		var c = this.cursor;
+		delete line[c.x].attr.cursor;
+		var after = line.splice(c.x);
+		var spaces = [];
+		while(cnt--) {
+			spaces.push({chr:' ', attr: util.extend({},this.attr) })
+		}
+		line.push.apply(line, spaces);
+		line.push.apply(line, after);
+		line.splice(this.width);
+		line[c.x].attr.cursor = true;
+	},
 	insertLine: function(insertAfter, n) {
 		n = n === undefined ? this.getLineNumber() : n;
 		if(insertAfter)
@@ -196,22 +211,26 @@ TermBuffer.prototype = {
 		n = n === undefined ? this.getLineNumber() : n;
 		this.buffer.splice(n + this.scrollArea[0], 1)
 		if(this.scrollArea[1] != this.height)
-			this.insertLine(this.scrollArea[1] - this.scrollArea[0]);
+			this.insertLine(false, this.scrollArea[1] - this.scrollArea[0]);
 	},
-	mvCur: function(x, y) {
-		var obj = {x: this.cursor.x + x, y: this.cursor.y + y};
+	mvCur: function(x, y, step) {
+		var mult = step === 'tabstop' ? 8 : 1;
+		var obj = {x: (this.cursor.x + (x * mult) - (this.cursor.x % mult)), y: this.cursor.y + y};
 		return this.setCur(obj);
 	},
 	setCur: function(obj) {
 		var inbounds = 0;
 		var c = this.cursor;
 
-		this.editChar().attr.cursor = false;
+		if(this.cursorLine && this.cursorLine[c.x]) {
+			delete this.cursorLine[c.x].attr.cursor;
+			this.cursorLine.changed = true;
+		}
 
 		if(obj.x < 0)
 			obj.x = 0;
 		else if(obj.x >= this.width)
-			obj.x = this.width - 1
+			obj.x = this.width - 1;
 		else
 			inbounds++
 
@@ -225,6 +244,7 @@ TermBuffer.prototype = {
 		util.extend(this.cursor, obj);
 
 		this.editChar().attr.cursor = true;
+		this.cursorLine = this.getLine();
 
 		return inbounds === 2;
 	},

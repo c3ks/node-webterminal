@@ -79,7 +79,7 @@
 		data: function(data) {
 			this.terminal.write(data);
 			var diff = this.terminal.getBuffer().dumpDiff();
-
+			console.log(diff);
 			this.render(diff);
 		},
 

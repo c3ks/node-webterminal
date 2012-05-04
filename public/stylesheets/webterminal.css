@@ -9,7 +9,7 @@
 }
 
 /* COLORS*/
-.webterminal .fg_0, .cursor_true {
+.webterminal .fg_0 {
 	color: #000000;
 }
 .webterminal .fg_1 {
@@ -102,7 +102,7 @@
 .webterminal .bg_14 {
 	background-color: #55ffff;
 }
-.webterminal .bg_15, .cursor_true {
+.webterminal .bg_15 {
 	background-color: #ffffff;
 }
 
@@ -1656,4 +1656,10 @@
 	-webkit-animation-iteration-count: infinite;  
 	-webkit-animation-timing-function: cubic-bezier(1.0,0,0,1.0);
 	-webkit-animation-duration: 1s; 
+}
+
+/* CURSOR */
+.webterminal .cursor_true {
+	background-color: #ffffff!important;
+	color: #000000 !important;
 }

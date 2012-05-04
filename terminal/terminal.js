@@ -59,7 +59,6 @@ Terminal.prototype = {
 					break;
 				case CHR.BS:
 					this.getBuffer().mvCur(-1, 0);
-					this.getBuffer().editChar().chr = null;
 					break;
 				case CHR.CR:
 					this.getBuffer().setCur({x: 0});
