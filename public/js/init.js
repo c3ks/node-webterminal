@@ -37,17 +37,16 @@ function parseResponse(res, term)
 			break;
 		case '+': // a line has been inserted at position i
 			if(t.children()[i])
-				element = $("<div>&nbsp;</div>").insertBefore(t.children()[i]);
-			else // if the terminal hasn't built up to that line, insert empty lines;
-				while(!t.children()[i])
-					element = $("<div>&nbsp</div>").appendTo(t);
+				element = $("<div>").insertBefore(t.children()[i]);
+			else // if no children is found, consider adding it to the end
+				element = $("<div>").appendTo(t);
 			break;
 		case '-': // the line at position i has been removed
 			$(t.children()[i]).remove()
 			break;
 		}
 		if(element && line) {
-			element.html("");
+			element.html(line.length === 0 ? "&nbsp" : "");
 			for(var i = 0; i < line.length; i++) {
 				var chr = $("<span>").appendTo(element).text(line[i].chr);
 				for(var k in line[i].attr) {
