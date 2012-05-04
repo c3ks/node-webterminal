@@ -6,16 +6,38 @@ $(document).ready(init);
 function init()
 {
 	iowrapper = new IoWrapper(parseResponse);
-	$("body").on("keypress", submitInput);
+	$("body").on("keypress", keypress);
+	$("body").on("keydown", keydown);
 }
 
 
-function submitInput(event)
+function keypress(event)
 {
-	var chr;
-		chr = String.fromCharCode(event.which)
+	iowrapper.send(String.fromCharCode(event.which), parseResponse);
+}
 
-	iowrapper.send(chr, parseResponse);
+function keydown(event)
+{
+	//iowrapper.send(chr, parseResponse);
+	switch(event.which) {
+		case 38: // up
+			iowrapper.send("\x1b[A")
+			return false;
+		case 40: // down
+			iowrapper.send("\x1b[B")
+			return false;
+		case 39: // right
+			iowrapper.send("\x1b[C")
+			return false;
+		case 37: // left
+			iowrapper.send("\x1b[D")
+			return false;
+		case 8:
+		case 9:
+			iowrapper.send(String.fromCharCode(event.which))
+			return false;
+	}
+	return true;
 }
 
 function parseResponse(res, term)
