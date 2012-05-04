@@ -1,6 +1,11 @@
+/* WEBTERMINAL */
 @font-face {
         font-family: "TerminusWeb";
         src: url('/font/Terminus.ttf');
+}
+
+#term {
+	font: 16px "Terminus", "TerminusWeb", monospace;
 }
 
 *

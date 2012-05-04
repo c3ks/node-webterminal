@@ -3,9 +3,11 @@
 	to { opacity: 0.0; }
 }
 
-/* WEBTERMINAL */
-.webterminal {
-	font: 16px "Terminus", "TerminusWeb", monospace;
+@-webkit-keyframes cursor {  
+	0% { background-color:white; color:black; }
+	50% { background-color:white; color:black; }
+	51% { background-color:black; color:white; }
+	100% { background-color:black; color:white; }
 }
 
 /* COLORS*/
@@ -1646,12 +1648,14 @@
 
 /* TEXT DECORATIONS */
 .webterminal .bold_true {
-	text-weight:bold;
+	font-weight:bold;
 }
 .webterminal .underline_true {
 	text-decoration:underline;
 }
+
 .webterminal .blink_true {
+	text-decoration:blink;
 	-webkit-animation-name: blinker;  
 	-webkit-animation-iteration-count: infinite;  
 	-webkit-animation-timing-function: cubic-bezier(1.0,0,0,1.0);
@@ -1660,6 +1664,13 @@
 
 /* CURSOR */
 .webterminal .cursor_true {
-	background-color: #ffffff!important;
+	background-color: #ffffff !important;
 	color: #000000 !important;
+	-webkit-animation-name: cursor;
+	-webkit-animation-iteration-count: infinite;  
+	-webkit-animation-duration: 2s; 
+}
+
+.webterminal.terminated {
+	opacity: 0.5;
 }
