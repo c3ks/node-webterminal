@@ -20,10 +20,40 @@ function submitInput(event)
 
 function parseResponse(res, term)
 {
-	$("#log").append(res);
-	$("#log").append("<br />");
-	$("#log").append($("<pre>").text(JSON.stringify(term.getBuffer().dumpDiff())))
+	var diff = term.getBuffer().dumpDiff();
+	$("#log").append($("<pre>").text(JSON.stringify(diff)))
+	$("#log").append("Hello")
 
 	//res = format(res);
-	$("#term").text(term.toString());
+
+	var t = $("#term");
+	for(var i in diff) {
+		var action = diff[i].act;
+		var line = diff[i].line;
+		var element = null;
+		switch(action) {
+		case 'c': // a line has been changed
+			element = $(t.children()[i]);
+			break;
+		case '+': // a line has been inserted at position i
+			if(t.children()[i])
+				element = $("<div>&nbsp;</div>").insertBefore(t.children()[i]);
+			else // if the terminal hasn't built up to that line, insert empty lines;
+				while(!t.children()[i])
+					element = $("<div>&nbsp</div>").appendTo(t);
+			break;
+		case '-': // the line at position i has been removed
+			$(t.children()[i]).remove()
+			break;
+		}
+		if(element && line) {
+			element.html("");
+			for(var i = 0; i < line.length; i++) {
+				var chr = $("<span>").appendTo(element).text(line[i].chr);
+				for(var k in line[i].attr) {
+					chr.addClass(k+"_"+line[i].attr[k]);
+				}
+			}
+		}
+	}
 }
