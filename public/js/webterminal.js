@@ -28,7 +28,7 @@
 
 		this.box = document.createElement('pre');
 		element.appendChild(this.box);
-		element.className = 'webterminal';
+		this.box.className = 'webterminal';
 
 		this.terminal = new terminal.Terminal(80, 24);
 
@@ -50,6 +50,11 @@
 
 		keypress: function(event) {
 			this.sendInput(String.fromCharCode(event.which));
+			return false;
+		},
+
+		exit: function() {
+			this.box.className += " terminated";
 		},
 
 		keydown: function(event) {
