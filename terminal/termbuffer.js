@@ -53,7 +53,8 @@ function TermBuffer(width, height, defaultAttr) {
 		underline: false,
 		blink: false,
 		inverse: false,
-		graphics: false
+		graphics: false,
+		cursor: false
 	}, defaultAttr);
 	this.attr = util.extend({}, this.defaultAttr);
 }
@@ -66,10 +67,13 @@ TermBuffer.prototype = {
 			if(data[i] === LF)
 				this.newLine(false);
 			else {
-				if(this.attr.graphic === true && graphics[data[i]] !== undefined)
-					this.setChar(graphics[data[i]]);
+				var c = this.editChar();
+				if(typeof data[i] === 'string') {
+					c.chr = this.attr.graphic ? (graphics[data[i]] || data[i]) : data[i];
+					util.extend(c.attr, this.attr);
+				}
 				else
-					this.setChar(data[i]);
+					util.extend(c.chr, data[i]);
 
 				if(this.mvCur(1, 0) == false)
 					this.newLine(true);
@@ -83,13 +87,13 @@ TermBuffer.prototype = {
 		this.mvCur(0, 1);this.setCur({x:0})
 		this.getLine();
 	},
-	setChar: function(c) {
+	editChar: function(action) {
 		var line = this.getLine();
-		line[this.cursor.x] = typeof c === 'string' ? {
-			chr: c,
-			attr: util.extend({}, this.attr)
-		} : c;
 		line.changed = true;
+		if(line[this.cursor.x])
+			return line[this.cursor.x];
+		else
+			return line[this.cursor.x] = { chr: null, attr: {}};
 	},
 	clear: function() {
 		var args = [this.scrollArea[0], this.scrollArea[1] + 1]
@@ -142,6 +146,7 @@ TermBuffer.prototype = {
 			line.splice(0, line.length);
 			break;
 		}
+		this.setCur(this.cursor);
 		return this;
 	},
 	getLineNumber: function(n) {
@@ -199,6 +204,10 @@ TermBuffer.prototype = {
 	},
 	setCur: function(obj) {
 		var inbounds = 0;
+		var c = this.cursor;
+
+		this.editChar().attr.cursor = false;
+
 		if(obj.x < 0)
 			obj.x = 0;
 		else if(obj.x >= this.width)
@@ -214,6 +223,9 @@ TermBuffer.prototype = {
 			inbounds++
 
 		util.extend(this.cursor, obj);
+
+		this.editChar().attr.cursor = true;
+
 		return inbounds === 2;
 	},
 	dump: function(withScrollBack) {
@@ -229,8 +241,9 @@ TermBuffer.prototype = {
 			var line = []
 			if(this.buffer[i])
 				for(var j = 0; j < this.buffer[i].length; j++) {
-					line.push(this.buffer[i][j] ? this.buffer[i][j].chr : ' ');
+					line.push(this.buffer[i][j] ? this.buffer[i][j].chr || ' ' : ' ');
 				}
+				while(line[line.length-1] === ' ') line.pop();
 			ret.push(line.join(''));
 		}
 		return ret.join(LF);
@@ -239,7 +252,7 @@ TermBuffer.prototype = {
 		var old = this.scrollBack;
 		old.push.apply(old, this.buffer);
 		var oldCursor = this.cursor;
-		this.cursor = {x:0,y:0}
+		this.setCur(this.cursor = {x:0,y:0})
 		this.height = height;
 		this.width = width;
 		this.scrollArea = [ 0, this.height - 1]

@@ -3,8 +3,13 @@
 	to { opacity: 0.0; }
 }
 
+/* WEBTERMINAL */
+.webterminal {
+	font: 16px "Terminus", "TerminusWeb", monospace;
+}
+
 /* COLORS*/
-.webterminal .fg_0 {
+.webterminal .fg_0, .cursor_true {
 	color: #000000;
 }
 .webterminal .fg_1 {
@@ -97,7 +102,7 @@
 .webterminal .bg_14 {
 	background-color: #55ffff;
 }
-.webterminal .bg_15 {
+.webterminal .bg_15, .cursor_true {
 	background-color: #ffffff;
 }
 

@@ -4,7 +4,7 @@
 
 var connect = require('connect')
   , socketio = require('socket.io')
-  , controllers = require('./controllers')
+  , PtyController = require('./controllers/ptycontroller').PtyController
   , routes = require('./routes')
 
 // Configuration
@@ -19,5 +19,5 @@ var io = socketio.listen(app);
 
 io.sockets.on('connection', function(socket) {
 	console.log("New Connection opened");
-	controllers.mypty(socket); 
+	new PtyController(socket)
 });

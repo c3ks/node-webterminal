@@ -51,7 +51,7 @@ Terminal.prototype = {
 		var i = 0;
 		data = data.toString();
 		if(this.escapeBuffer !== null)
-			i = this.escapeWrite(data)
+			i = this.escapeWrite(data);
 		for(; i < data.length; i++) {
 			switch(data[i]) {
 				case CHR.BELL:
@@ -59,7 +59,7 @@ Terminal.prototype = {
 					break;
 				case CHR.BS:
 					this.getBuffer().mvCur(-1, 0);
-					this.getBuffer().setChar(' ');
+					this.getBuffer().editChar().chr = null;
 					break;
 				case CHR.CR:
 					this.getBuffer().setCur({x: 0});
@@ -102,7 +102,7 @@ Terminal.prototype = {
 		return this;
 	},
 	restCur: function() {
-		return this.setCursor(this.savedCursor);
+		return this.setCur(this.savedCursor);
 	},
 	updated: function() {
 		this.onUpdate(this, this.getBuffer());
