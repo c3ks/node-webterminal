@@ -17,6 +17,11 @@ exports.csi = function(data, terminal) {
 	return match[0].length;
 }
 
+var decmodes = {
+	7: 'wraparound',
+	25: 'showCursor'
+}
+
 var commands = {
 	'@': function(terminal, buffer, mod, n) {
 		n = n || 1;
@@ -36,7 +41,7 @@ var commands = {
 	},
 	'D': function(terminal, buffer, mod, n) {
 		n = n || 1;
-		terminal.mvCur(-n, 0);
+		buffer.mvCur(-n, 0);
 	},
 	'E': function(terminal, buffer, mod, n) {
 		n = n || 1;
@@ -65,11 +70,13 @@ var commands = {
 	'K': function(terminal, buffer, mod, n) {
 		buffer.eraseLine(n);
 	},
-	'S': function(terminal, buffer, mod, n) {
-		terminal.scroll(-n);
+	'P': function(terminal, buffer, mod, n) {
+		n = n || 1;
+		buffer.deleteChar(n);
 	},
-	'T': function(terminal, buffer, mod, n) {
-		terminal.scroll(n);
+	'd': function(terminal, buffer, mod, n) {
+		n = n === undefined ? 0 : n - 1;
+		buffer.setCur({y:n});
 	},
 	'f': function(terminal, buffer, mod, n) {
 		commands.H(terminal, n);
@@ -89,10 +96,20 @@ var commands = {
 	'u': function(terminal, buffer) {
 		terminal.curRest();
 	},
-	'l': function(terminal, buffer) {
-		terminal.showCursor = false;
+	'l': function(terminal, buffer, mod, n) {
+		if(mod === "?" && decmodes[n]) {
+			buffer[decmodes[n]] = false;
+		}
+		else {
+			console.log("Unknown mode:" + mod + n);
+		}
 	},
-	'h': function(terminal, buffer) {
-		terminal.showCursor = true;
+	'h': function(terminal, buffer, mod, n) {
+		if(mod === "?" && decmodes[n]) {
+			buffer[decmodes[n]] = true;
+		}
+		else {
+			console.log("Unknown mode:" + mod + n);
+		}
 	}
 }

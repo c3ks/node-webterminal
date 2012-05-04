@@ -26,11 +26,12 @@
 		this.id = Math.random().toString().substr(2);
 		webterminals[this.id] = this;
 
+		this.terminal = new terminal.Terminal(80, 24);
+
 		this.box = document.createElement('pre');
 		element.appendChild(this.box);
-		this.box.className = 'webterminal';
-
-		this.terminal = new terminal.Terminal(80, 24);
+		element.className += ' webterminal';
+		this.box.className = this.attr2Class(this.terminal.getBuffer().attr);
 
 		this.socket = initSocket("http://localhost:3000");
 		this.socket.emit("ptyinit", { id: this.id });
@@ -84,7 +85,6 @@
 		data: function(data) {
 			this.terminal.write(data);
 			var diff = this.terminal.getBuffer().dumpDiff();
-			console.log(diff);
 			this.render(diff);
 		},
 
@@ -114,17 +114,20 @@
 							var chr = document.createElement('span');
 							chr.appendChild(document.createTextNode(line[i].chr || ' '))
 							element.appendChild(chr);
-							var classes = []
-							for(var k in line[i].attr) {
-								classes.push(k+"_"+line[i].attr[k]);
-							}
-							chr.className = classes.join(' ');
+							chr.className = this.attr2Class(line[i].attr)
 						}
 						else
 							element.appendChild(document.createTextNode(' '))
 					}
 				}
 			}
+		},
+		attr2Class: function(attr) {
+			var classes = [];
+			for(var k in attr) {
+				classes.push(k+"_"+attr[k]);
+			}
+			return classes.join(' ');
 		}
 	}
 	window.WebTerminal = WebTerminal;

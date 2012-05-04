@@ -1671,6 +1671,6 @@
 	-webkit-animation-duration: 2s; 
 }
 
-.webterminal.terminated {
+.webterminal .terminated {
 	opacity: 0.5;
 }

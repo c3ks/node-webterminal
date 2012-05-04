@@ -40,6 +40,9 @@ function TermBuffer(width, height, defaultAttr) {
 	this.width = width;
 	this.height = height;
 
+	this.wraparound = true;
+	this.showCursor = true;
+
 	this.scrollArea = [0, height - 1];
 	this.scrollBack = [];
 	this.buffer = []
@@ -75,7 +78,7 @@ TermBuffer.prototype = {
 				else
 					util.extend(c.chr, data[i]);
 
-				if(this.mvCur(1, 0) == false)
+				if(this.mvCur(1, 0) == false && this.wraparound)
 					this.newLine(true);
 			}
 		}
@@ -207,11 +210,10 @@ TermBuffer.prototype = {
 			this.scrollArea = [ Math.max(n, 0), Math.min(m, this.height - 1) ];
 		}
 	},
-	deleteLine: function(n) {
-		n = n === undefined ? this.getLineNumber() : n;
-		this.buffer.splice(n + this.scrollArea[0], 1)
-		if(this.scrollArea[1] != this.height)
-			this.insertLine(false, this.scrollArea[1] - this.scrollArea[0]);
+	deleteChar: function(n) {
+		var line = this.getLine();
+		line.splice(this.cursor.x, n);
+		this.setCur(this.cursor);
 	},
 	mvCur: function(x, y, step) {
 		var mult = step === 'tabstop' ? 8 : 1;
@@ -243,7 +245,8 @@ TermBuffer.prototype = {
 
 		util.extend(this.cursor, obj);
 
-		this.editChar().attr.cursor = true;
+		if(this.showCursor)
+			this.editChar().attr.cursor = true;
 		this.cursorLine = this.getLine();
 
 		return inbounds === 2;

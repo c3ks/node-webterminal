@@ -101,7 +101,7 @@ Terminal.prototype = {
 		return this;
 	},
 	restCur: function() {
-		return this.setCur(this.savedCursor);
+		return this.getBuffer().setCur(this.savedCursor);
 	},
 	updated: function() {
 		this.onUpdate(this, this.getBuffer());

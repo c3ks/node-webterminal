@@ -56,6 +56,9 @@ exports.sgr = function(terminal, sgr) {
 			if(sgr[i+1] == 5)
 				attr.fg = -sgr[i+=2];
 			break
+		case 39:
+			attr.fg = defaultAttr.fg
+			break;
 		case 48:
 			if(sgr[i+1] == 5)
 				attr.bg = -sgr[i+=2];
