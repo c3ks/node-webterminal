@@ -48,10 +48,14 @@ function parseResponse(res, term)
 		if(element && line) {
 			element.html(line.length === 0 ? "&nbsp" : "");
 			for(var i = 0; i < line.length; i++) {
-				var chr = $("<span>").appendTo(element).text(line[i].chr);
-				for(var k in line[i].attr) {
-					chr.addClass(k+"_"+line[i].attr[k]);
+				if(line[i]) {
+					var chr = $("<span>").appendTo(element).text(line[i].chr);
+					for(var k in line[i].attr) {
+						chr.addClass(k+"_"+line[i].attr[k]);
+					}
 				}
+				else
+					element.append("&nbsp;");
 			}
 		}
 	}
