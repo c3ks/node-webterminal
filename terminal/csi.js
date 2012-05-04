@@ -46,7 +46,8 @@ var commands = {
 		buffer.setCur({x: n});
 	},
 	'H': function(terminal, buffer, n, m) {
-		n--; m--;
+		n = n === undefined ? 0 : n - 1;
+		m = m === undefined ? 0 : m - 1;
 		buffer.setCur({y: n, x: m});
 	},
 	'J': function(terminal, buffer, n) {
