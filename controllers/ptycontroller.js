@@ -37,16 +37,20 @@ PtyController.prototype = {
 	},
 
 	input: function(data) {
-		this.ptys[data.id].write(data.data);
+		if(this.ptys[data.id])
+			this.ptys[data.id].write(data.data);
 	},
 
 	signal: function(data) {
-		this.ptys[data.id].kill(data.data);
+		if(this.ptys[data.id])
+			this.ptys[data.id].kill(data.data);
 	},
 
 	exit: function(data) {
-		this.ptys[data.id].kill("SIGHUP");
-		this.ptys[data.id].end();
+		if(this.ptys[data.id]) {
+			this.ptys[data.id].kill("SIGHUP");
+			this.ptys[data.id].end();
+		}
 	},
 
 	finalize: function() {
