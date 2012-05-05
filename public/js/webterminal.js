@@ -170,8 +170,9 @@
 	if(window.jQuery && window.jQuery().jquery) {
 		window.jQuery.fn.webterminal = function(options) {
 			this.each(function() {
-				if($(this).children('.webterminal').length == 0)
-					new WebTerminal(this, options);
+				if(!$(this).data('webterminal') {
+					$(this).data('webterminal', new WebTerminal(this, options));
+				return $(this).data('webterminal')
 			});
 		}
 	}
