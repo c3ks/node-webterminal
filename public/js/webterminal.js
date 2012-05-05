@@ -170,7 +170,7 @@
 	if(window.jQuery && window.jQuery().jquery) {
 		window.jQuery.fn.webterminal = function(options) {
 			this.each(function() {
-				if(!$(this).data('webterminal') {
+				if(!$(this).data('webterminal'))
 					$(this).data('webterminal', new WebTerminal(this, options));
 				return $(this).data('webterminal')
 			});
