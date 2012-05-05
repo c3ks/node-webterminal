@@ -27,7 +27,6 @@
 		webterminals[this.id] = this;
 
 		options = options || {
-			url:"http://localhost",
 			cols:80,
 			rows:24
 		}
@@ -74,7 +73,7 @@
 			var n = []
 			for(var i = 0; i < l.length; i++)
 				(l[i] != "focus") && n.push(l[i])
-			this.box.className = n.join('');
+			this.box.className = n.join(' ');
 		},
 		sendInput: function(data) {
 			this.socket.emit("ptyinput", { id: this.id, data: data });
