@@ -20,27 +20,62 @@
 		return o;
 	}
 
-	function WebTerminal(element) {
+	function WebTerminal(element, options) {
 		var self = this;
 
 		this.id = Math.random().toString().substr(2);
 		webterminals[this.id] = this;
 
-		this.terminal = new terminal.Terminal(80, 24);
+		options = options || {
+			url:"http://localhost",
+			cols:80,
+			rows:24
+		}
+
+		this.terminal = new terminal.Terminal(options.cols, options.rows, options);
 
 		this.box = document.createElement('pre');
 		element.appendChild(this.box);
 		element.className += ' webterminal';
 		this.box.className = this.attr2Class(this.terminal.getBuffer().attr);
 
-		this.socket = initSocket("http://localhost:3000");
+		this.socket = initSocket(options.url);
 		this.socket.emit("ptyinit", { id: this.id });
 
-		window.onkeypress = function(event) { return self.keypress(event) };
-		window.onkeydown = function(event) { return self.keydown(event) };
+		this.blur();
+		this.box.addEventListener("click", function() {self.focus(); }, true)
+		this.oldKeypress = window.onkeypress;
+		this.oldKeydown = window.onkeydown;
+		this.oldClick = window.onclick;
+		this.blur();
 	}
 
 	WebTerminal.prototype = {
+		focus: function() {
+			var self = this;
+			for(var id in webterminals) {
+				webterminals[id].blur();
+			}
+			this.oldKeypress = window.onkeypress;
+			this.oldKeydown = window.onkeydown;
+			this.oldKeydown = window.onclick;
+			window.onkeypress = function(event) { return self.keypress(event) };
+			window.onkeydown = function(event) { return self.keydown(event) };
+			setTimeout(function() {
+				window.onclick = function() { self.blur() }
+			},0);
+			this.box.className += " focus";
+		},
+		blur: function() {
+			window.onkeypress = this.oldKeypress;
+			window.onkeydown = this.oldKeydown;
+			window.onclick = this.oldClick;
+			var l = this.box.className.split(/ +/)
+			var n = []
+			for(var i = 0; i < l.length; i++)
+				(l[i] != "focus") && n.push(l[i])
+			this.box.className = n.join('');
+		},
 		sendInput: function(data) {
 			this.socket.emit("ptyinput", { id: this.id, data: data });
 		},
@@ -130,5 +165,14 @@
 			return classes.join(' ');
 		}
 	}
+
 	window.WebTerminal = WebTerminal;
+	if(window.jQuery && window.jQuery().jquery) {
+		window.jQuery.fn.webterminal = function(options) {
+			this.each(function() {
+				if($(this).children('.webterminal').length == 0)
+					new WebTerminal(this, options);
+			});
+		}
+	}
 })()

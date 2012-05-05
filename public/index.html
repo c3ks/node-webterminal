@@ -6,14 +6,21 @@
 		<title>Node-Webterminal</title>
 		<link rel="stylesheet" href="/stylesheets/style.css" />
 		<link rel="stylesheet" href="/stylesheets/webterminal.css" />
+		<script type="text/javascript" charset="utf8" src="/js/jquery.js"></script>
 		<script type="text/javascript" charset="utf8" src="/socket.io/socket.io.js"></script>
 		<script type="text/javascript" charset="utf8" src="terminal.js"></script>
 		<script type="text/javascript" charset="utf8" src="/js/webterminal.js"></script>
+		<script type="text/javascript" charset="utf8">
+			$(document).ready(function() {
+				$('#term').webterminal();
+			})
+		</script>
 	</head>
 
-	<body onload="new WebTerminal(document.getElementById('term'))">
+	<body>
 		<div id="term">
 		</div>
+		<hr>
 	</body>
 
 </html>

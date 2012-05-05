@@ -1664,6 +1664,10 @@
 
 /* CURSOR */
 .webterminal .cursor_true {
+	outline: 1px solid white;
+}
+.webterminal .focus .cursor_true {
+	outline: none;
 	background-color: #ffffff !important;
 	color: #000000 !important;
 	-webkit-animation-name: cursor;
