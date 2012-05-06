@@ -14,13 +14,17 @@ exports.ansi = function(data, terminal) {
 			buffer.write('\x84');
 			return 1;
 		case 'E':
-			buffer.write('\x85');
+			if(!buffer.mvCur(0, 1))
+				buffer.insertLine(true);
+			//buffer.write('\x85');
 			return 1;
 		case 'H':
 			buffer.setTab();
 			return 1;
 		case 'M':
-			buffer.write('\x8d');
+			if(!buffer.mvCur(0, -1))
+				buffer.insertLine();
+			//buffer.write('\x8d');
 			return 1;
 		case 'N':
 			buffer.write('\x8e');

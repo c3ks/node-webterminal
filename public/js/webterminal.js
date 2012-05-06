@@ -126,25 +126,24 @@
 		},
 
 		render: function(diff) {
-			var children = Array.prototype.slice.call(this.box.childNodes, 0);
+			var children = this.box.childNodes;
 			for(var i in diff) {
 				var action = diff[i].act;
 				var line = diff[i].line;
+				var deleted = diff[i].rm;
+
+				while(deleted--)
+					this.box.removeChild(children[i]);
+
 				var element = children[i];
-				switch(action) {
-					case 'c': // a line has been changed
-						break;
-					case '+': // a line has been inserted at position i
-						element = document.createElement('div');
-						if(children[i])
-							this.box.insertBefore(element, children[i]);
-						else // if no children is found, consider adding it to the end
-							this.box.appendChild(element);
-						break;
-					case '-': // the line at position i has been removed
-						this.box.removeChild(element);
-						break;
+				if(action === '+') {
+					element = document.createElement('div');
+					if(children[i])
+						this.box.insertBefore(element, children[i]);
+					else
+						this.box.appendChild(element);
 				}
+
 				if(line) {
 					element.innerHTML = (line.length === 0 ? " " : "");
 					for(var i = 0; i < line.length; i++) {

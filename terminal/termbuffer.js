@@ -326,27 +326,39 @@ TermBuffer.prototype = {
 	},
 	dumpDiff: function() {
 		var diff = {}
-		for(var i = 0; i < Math.max(this.buffer.length, this.oldBuffer.length); i++) {
-			var line = this.buffer[i]
-			  , oldLine = this.oldBuffer[i]
-			  , oldIndex = util.indexOf(this.oldBuffer, line)
-			  , newIndex = util.indexOf(this.buffer, oldLine);
-			if((oldIndex === -1 && newIndex === -1)) {
-				diff[i] = {act: 'c', line: line}
-				if(i >= this.oldBuffer.length)
-					diff[i].act = '+';
-				else if(i >= this.buffer.length)
-					diff[i].act = '-';
+		var lastDiff;
+		var i = 0, j = 0;
+		var emptyLine = [];
+		var deleted = 0;
+		for(; i < Math.min(this.buffer.length, this.oldBuffer.length); i++, j++) {
+			var line = this.buffer[i] || emptyLine
+			  , oldLine = this.oldBuffer[j] || emptyLine
+			var oldInNew = util.indexOf(this.buffer, oldLine)
+			  , newInOld = util.indexOf(this.oldBuffer, line)
+
+			if(oldInNew === -1 && newInOld !== -1) {
+				deleted = newInOld - i;
+				j += deleted;
+				oldLine = this.oldBuffer[j] || emptyLine
+				oldInNew = util.indexOf(this.buffer, oldLine)
 			}
-			else if(newIndex === -1)
-				diff[i] = {act:'-'}
-			else if(oldIndex === -1)
-				diff[i] = {act:'+', line: line}
-			else if(line.changed)
-				diff[i] = {act:'c', line: line}
-			if(line)
-				line.changed = false;
+			if((line === oldLine && line.changed) || newInOld === -1) {
+				diff[i] = {act: line === oldLine ? 'c' : '+', line: line, rm: deleted};
+				line !== oldLine && j--;
+			}
+			else if(deleted !== 0)
+				diff[i] = {rm: deleted};
+			deleted = 0;
+			delete line.changed;
 		}
+		deleted = this.oldBuffer.length - j
+		for(; i < this.buffer.length; i++){
+			diff[i] = {act: '+', line: this.buffer[i], rm: deleted};
+			deleted = 0;
+		}
+		if(deleted !== 0)
+			diff[i] = {rm: deleted};
+
 		this.oldBuffer = this.buffer.slice(0);
 		return diff;
 	}
