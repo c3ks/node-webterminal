@@ -10,7 +10,9 @@ var CHR = {
 	LF: '\x0a',
 	CR: '\x0d',
 	ESCAPE: '\x1b',
-	DEL: '\x7f'
+	DEL: '\x7f',
+	TAB: '\t',
+	TABSET: '\x88'
 }
 
 function Terminal(width, height) {
@@ -52,25 +54,32 @@ Terminal.prototype = {
 		data = data.toString();
 		if(this.escapeBuffer !== null)
 			i = this.escapeWrite(data);
+		var buffer = this.getBuffer();
 		for(; i < data.length; i++) {
 			switch(data[i]) {
 				case CHR.BELL:
 					this.onBell(this);
 					break;
 				case CHR.BS:
-					this.getBuffer().mvCur(-1, 0);
+					buffer.mvCur(-1, 0);
 					break;
 				case CHR.CR:
-					this.getBuffer().setCur({x: 0});
+					buffer.setCur({x: 0});
 					break;
 				case CHR.ESCAPE:
 					i += this.escapeWrite(data.slice(++i));
 					break;
 				case CHR.DEL:
-					this.currentBuffer().delete(1);
+					buffer.deleteChar(1);
+					break;
+				case CHR.TABSET:
+					buffer.setTab();
+					break;
+				case CHR.TAB:
+					buffer.mvTab(1);
 					break;
 				default:
-					this.getBuffer().write(data[i]);
+					buffer.write(data[i]);
 			}
 		}
 		this.updated();

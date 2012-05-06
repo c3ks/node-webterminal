@@ -42,7 +42,10 @@
 		this.socket.emit("ptyinit", { id: this.id });
 
 		this.blur();
-		this.box.addEventListener("click", function() {self.focus(); }, true)
+		if(this.box.addEventListener)
+			this.box.addEventListener("click", function() {self.focus(); }, true)
+		else
+			this.box.attachEvent("onclick", function() {self.focus(); }, true)
 		this.oldKeypress = window.onkeypress;
 		this.oldKeydown = window.onkeydown;
 		this.oldClick = window.onclick;
@@ -62,7 +65,7 @@
 			window.onkeydown = function(event) { return self.keydown(event) };
 			setTimeout(function() {
 				window.onclick = function() { self.blur() }
-			},0);
+			},100);
 			this.box.className += " focus";
 		},
 		blur: function() {

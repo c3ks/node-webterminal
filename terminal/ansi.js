@@ -10,6 +10,54 @@ exports.ansi = function(data, terminal) {
 		case 'c':
 			buffer.clear();
 			return 1;
+		case 'D':
+			buffer.write('\x84');
+			return 1;
+		case 'E':
+			buffer.write('\x85');
+			return 1;
+		case 'H':
+			buffer.setTab();
+			return 1;
+		case 'M':
+			buffer.write('\x8d');
+			return 1;
+		case 'N':
+			buffer.write('\x8e');
+			return 1;
+		case 'O':
+			buffer.write('\x8f');
+			return 1;
+		case 'P':
+			buffer.write('\x90');
+			return 1;
+		case 'V':
+			buffer.write('\x96');
+			return 1;
+		case 'W':
+			buffer.write('\x97');
+			return 1;
+		case 'X':
+			buffer.write('\x98');
+			return 1;
+		case 'Z':
+			buffer.write('\x9a');
+			return 1;
+		case '[':
+			buffer.write('\x9b');
+			return 1;
+		case '\\':
+			buffer.write('\x9c');
+			return 1;
+		case ']':
+			buffer.write('\x9d');
+			return 1;
+		case '^':
+			buffer.write('\x9e');
+			return 1;
+		case '_':
+			buffer.write('\x9f');
+			return 1;
 		case '#':
 			if(data[1] === undefined)
 				return 0;

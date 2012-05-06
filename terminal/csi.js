@@ -57,7 +57,7 @@ var commands = {
 	},
 	'I': function(terminal, buffer, mod, n) {
 		n = n || 1;
-		buffer.mvCur(n, 0, 'tabstop');
+		buffer.mvTab(n);
 	},
 	'H': function(terminal, buffer, mod, n, m) {
 		n = n === undefined ? 0 : n - 1;
@@ -74,12 +74,23 @@ var commands = {
 		n = n || 1;
 		buffer.deleteChar(n);
 	},
+	'X': function(terminal, buffer, mod, n) {
+		n = n || 1;
+		buffer.eraseChar(n);
+	},
+	'Z': function(terminal, buffer, mod, n) {
+		n = n || 1;
+		buffer.mvTab(-n);
+	},
 	'd': function(terminal, buffer, mod, n) {
 		n = n === undefined ? 0 : n - 1;
 		buffer.setCur({y:n});
 	},
 	'f': function(terminal, buffer, mod, n) {
 		commands.H(terminal, n);
+	},
+	'g': function(terminal, buffer, mod, n) {
+		buffer.clearTab(n);
 	},
 	'm': function(terminal, buffer) {
 		sgr(terminal, Array.prototype.slice.call(arguments, 3));

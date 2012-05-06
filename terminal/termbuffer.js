@@ -49,6 +49,8 @@ function TermBuffer(width, height, defaultAttr) {
 	this.oldBuffer = [];
 	this.cursor = {x:0,y:0};
 	this.cursorLine = null;
+	this.tabs = []
+	this.currentTab = -1;
 
 	this.defaultAttr = util.extend({
 		fg: 15,
@@ -215,10 +217,47 @@ TermBuffer.prototype = {
 		line.splice(this.cursor.x, n);
 		this.setCur(this.cursor);
 	},
-	mvCur: function(x, y, step) {
-		var mult = step === 'tabstop' ? 8 : 1;
-		var obj = {x: (this.cursor.x + (x * mult) - (this.cursor.x % mult)), y: this.cursor.y + y};
+	eraseChar: function(cnt) {
+		var line = this.getLine();
+		line.splice(this.cursor.x, n, new Array(n));
+		this.setCur(this.cursor);
+	},
+	mvCur: function(x, y) {
+		var obj = {x: this.cursor.x + x, y: this.cursor.y + y};
 		return this.setCur(obj);
+	},
+	setTab: function() {
+		this.tabs.push(this.cursor.x);
+		this.tabs.sort();
+	},
+	clearTab: function(n) {
+		switch(n) {
+			case 'current':
+			case 0:
+			default:
+				for(var i = this.tabs.length - 1; i >= 0; i--) {
+					if(this.tabs[i] < this.cursor.x)
+						this.tabs.splice(i, 1);
+						break;
+				}
+				break;
+			case 'all':
+			case 3:
+				this.tabs = [];
+				break;
+		}
+	},
+	mvTab: function(n) {
+		var nx = this.cursor.x;
+		var tabMax = this.tabs[this.tabs.length - 1] || 0;
+		var positive = n > 0;
+		n = Math.abs(n);
+		while(n != 0 && nx > 0 && nx < this.width-1) {
+			nx += positive ? 1 : -1;
+			if(util.indexOf(this.tabs, nx) != -1 || (nx > tabMax && nx % 8 == 0))
+				n--;
+		}
+		this.setCur({x: nx});
 	},
 	setCur: function(obj) {
 		var inbounds = 0;
@@ -296,8 +335,8 @@ TermBuffer.prototype = {
 		for(var i = 0; i < Math.max(this.buffer.length, this.oldBuffer.length); i++) {
 			var line = this.buffer[i] || emptyLine
 			  , oldLine = this.oldBuffer[i] || emptyLine
-			  , oldIndex = this.oldBuffer.indexOf(line)
-			  , newIndex = this.buffer.indexOf(oldLine);
+			  , oldIndex = util.indexOf(this.oldBuffer, line)
+			  , newIndex = util.indexOf(this.buffer, oldLine);
 			if((oldIndex === -1 && newIndex === -1))
 				diff[i] = {act:i >= this.oldBuffer.length ? '+' : 'c', line: line}
 			else if(newIndex === -1)

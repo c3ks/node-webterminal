@@ -7,25 +7,3 @@
 #term {
 	font: 16px "Terminus", "TerminusWeb", monospace;
 }
-
-*
-{
-	margin: 0;
-	padding: 0;
-}
-
-body, input {
-	background: #222;
-}
-
-#log
-{
-	background: #FFF;
-	bottom: 0;
-	color: #000;
-	position: fixed;
-	right: 0;
-	top: 0;
-	width: 400px;
-	overflow: auto;
-}
