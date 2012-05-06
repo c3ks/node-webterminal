@@ -42,6 +42,7 @@ function TermBuffer(width, height, defaultAttr) {
 
 	this.wraparound = true;
 	this.showCursor = true;
+	this.insertMode = false;
 
 	this.scrollArea = [0, height - 1];
 	this.scrollBack = [];
@@ -72,6 +73,8 @@ TermBuffer.prototype = {
 			if(data[i] === LF)
 				this.newLine(false);
 			else {
+				if(this.insertMode && this.getLine()[c.x])
+					this.insertSpace(1);
 				var c = this.editChar();
 				if(typeof data[i] === 'string') {
 					c.chr = this.attr.graphic ? (graphics[data[i]] || data[i]) : data[i];
@@ -111,43 +114,39 @@ TermBuffer.prototype = {
 	},
 	eraseData: function(type, n) {
 		n = n === undefined ? this.getLineNumber() : n;
-		switch(type) {
-		default:
-		case 0:
+		switch(type || 'toEnd') {
 		case 'toEnd':
+		case '0':
 			if(this.scrollArea[1] === this.height - 1)
 				this.buffer.splice(n+1);
 			else
 				for(var i = n + 1; i <= this.scrollArea[1]; i++)
-					this.buffer[i] = [];
+					this.buffer[i].splice(0);
 			break;
-		case 1:
 		case 'toBegin':
+		case '1':
 			for(var i = this.scrollArea[0]; i < n; i++)
-				this.buffer[i] = [];
+				this.buffer[i].splice(0);
 			break;
-			break;
-		case 2:
 		case 'entire':
-			this.eraseData('toBegin', n).eraseData('toEnd', n);
-			break;
+		case '2':
+			return this.buffer.splice(0);
 		}
 		return this.eraseLine(type);
 	},
 	eraseLine: function(type, n) {
 		var line = this.getLine();
-		switch(type) {
-		default:
-		case 0:
+		switch(type || 'toEnd') {
+		case '0':
 		case 'toEnd':
 			line.splice(this.cursor.x, line.length);
 			break;
-		case 1:
+		case '1':
 		case 'toBegin':
 			for(var i = 0; i < this.cursor.x; i++)
 				delete line[i];
 			break;
-		case 2:
+		case '2':
 		case 'entire':
 			line.splice(0, line.length);
 			break;
@@ -167,10 +166,7 @@ TermBuffer.prototype = {
 		n = this.getLineNumber(n);
 		if(n < 0)
 			return null;
-		else if(this.buffer[n])
-			return this.buffer[n];
-		else
-			return (this.buffer[n] = []);
+		return this.buffer[n] || ((this.buffer[n] = []));
 	},
 	insertSpace: function(cnt) {
 		var line = this.getLine();
@@ -231,20 +227,19 @@ TermBuffer.prototype = {
 		this.tabs.sort();
 	},
 	clearTab: function(n) {
-		switch(n) {
-			case 'current':
-			case 0:
-			default:
-				for(var i = this.tabs.length - 1; i >= 0; i--) {
-					if(this.tabs[i] < this.cursor.x)
-						this.tabs.splice(i, 1);
-						break;
-				}
-				break;
-			case 'all':
-			case 3:
-				this.tabs = [];
-				break;
+		switch(n || 'current') {
+		case 'current':
+		case 0:
+			for(var i = this.tabs.length - 1; i >= 0; i--) {
+				if(this.tabs[i] < this.cursor.x)
+					this.tabs.splice(i, 1);
+					break;
+			}
+			break;
+		case 'all':
+		case 3:
+			this.tabs = [];
+			break;
 		}
 	},
 	mvTab: function(n) {
@@ -331,23 +326,28 @@ TermBuffer.prototype = {
 	},
 	dumpDiff: function() {
 		var diff = {}
-		var emptyLine = []
 		for(var i = 0; i < Math.max(this.buffer.length, this.oldBuffer.length); i++) {
-			var line = this.buffer[i] || emptyLine
-			  , oldLine = this.oldBuffer[i] || emptyLine
+			var line = this.buffer[i]
+			  , oldLine = this.oldBuffer[i]
 			  , oldIndex = util.indexOf(this.oldBuffer, line)
 			  , newIndex = util.indexOf(this.buffer, oldLine);
-			if((oldIndex === -1 && newIndex === -1))
-				diff[i] = {act:i >= this.oldBuffer.length ? '+' : 'c', line: line}
+			if((oldIndex === -1 && newIndex === -1)) {
+				diff[i] = {act: 'c', line: line}
+				if(i >= this.oldBuffer.length)
+					diff[i].act = '+';
+				else if(i >= this.buffer.length)
+					diff[i].act = '-';
+			}
 			else if(newIndex === -1)
 				diff[i] = {act:'-'}
 			else if(oldIndex === -1)
 				diff[i] = {act:'+', line: line}
 			else if(line.changed)
 				diff[i] = {act:'c', line: line}
-			line.changed = false;
+			if(line)
+				line.changed = false;
 		}
-		this.oldBuffer = this.buffer.slice();
+		this.oldBuffer = this.buffer.slice(0);
 		return diff;
 	}
 }

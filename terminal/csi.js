@@ -17,9 +17,19 @@ exports.csi = function(data, terminal) {
 	return match[0].length;
 }
 
-var decmodes = {
-	7: 'wraparound',
-	25: 'showCursor'
+var modes = {
+	'4': 'insertMode',
+	'?7': 'wraparound',
+	'?25': 'showCursor',
+}
+
+function setMode(buffer, mod, n, v) {
+		if(modes[mod + n]) {
+			buffer[modes[mod + n]] = v;
+		}
+		else {
+			console.log("Unknown mode:" + mod + n);
+		}
 }
 
 var commands = {
@@ -108,19 +118,9 @@ var commands = {
 		terminal.curRest();
 	},
 	'l': function(terminal, buffer, mod, n) {
-		if(mod === "?" && decmodes[n]) {
-			buffer[decmodes[n]] = false;
-		}
-		else {
-			console.log("Unknown mode:" + mod + n);
-		}
+		setMode(buffer, mod, n, false);
 	},
 	'h': function(terminal, buffer, mod, n) {
-		if(mod === "?" && decmodes[n]) {
-			buffer[decmodes[n]] = true;
-		}
-		else {
-			console.log("Unknown mode:" + mod + n);
-		}
+		setMode(buffer, mod, n, true)
 	}
 }

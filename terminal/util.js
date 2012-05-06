@@ -8,7 +8,7 @@ exports.extend = function(o){
 exports.indexOf = function(arr, elem) {
 	if(arr.indexOf)
 		return arr.indexOf(elem);
-	else
+	else if(elem !== undefined)
 		for(var i = 0; i < arr.length; i++)
 			if(arr[i] === elem) return i;
 	return -1;

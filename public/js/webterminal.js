@@ -126,17 +126,18 @@
 		},
 
 		render: function(diff) {
+			var children = Array.prototype.slice.call(this.box.childNodes, 0);
 			for(var i in diff) {
 				var action = diff[i].act;
 				var line = diff[i].line;
-				var element = this.box.childNodes[i];
+				var element = children[i];
 				switch(action) {
 					case 'c': // a line has been changed
 						break;
 					case '+': // a line has been inserted at position i
 						element = document.createElement('div');
-						if(this.box.childNodes[i])
-							this.box.insertBefore(element, this.box.childNodes[i]);
+						if(children[i])
+							this.box.insertBefore(element, children[i]);
 						else // if no children is found, consider adding it to the end
 							this.box.appendChild(element);
 						break;
