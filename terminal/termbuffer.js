@@ -70,8 +70,9 @@ TermBuffer.prototype = {
 		var c = this.cursor;
 
 		for(var i = 0; i < data.length; i++) {
-			if(data[i] === LF)
+			if(data[i] === LF) {
 				this.newLine(false);
+			}
 			else {
 				if(this.insertMode && this.getLine()[c.x])
 					this.insertSpace(1);
@@ -90,9 +91,8 @@ TermBuffer.prototype = {
 	},
 	newLine: function(soft) {
 		this.getLine().soft = soft;
-		if(this.cursor.y == this.scrollArea[1])
+		if(this.mvCur(0, 1) == false)
 			this.insertLine(true);
-		this.mvCur(0, 1);
 		this.setCur({x:0})
 		this.getLine();
 	},
@@ -134,21 +134,22 @@ TermBuffer.prototype = {
 		}
 		return this.eraseLine(type);
 	},
-	eraseLine: function(type, n) {
+	eraseLine: function(type) {
 		var line = this.getLine();
 		switch(type || 'toEnd') {
 		case '0':
 		case 'toEnd':
-			line.splice(this.cursor.x, line.length);
+			line.splice(this.cursor.x);
 			break;
 		case '1':
 		case 'toBegin':
-			for(var i = 0; i < this.cursor.x; i++)
-				delete line[i];
+			var args = new Array(this.cursor.x);
+			args.unshift(0, this.cursor.x);
+			line.splice.apply(line, args);
 			break;
 		case '2':
 		case 'entire':
-			line.splice(0, line.length);
+			line.splice(0);
 			break;
 		}
 		this.setCur(this.cursor);
