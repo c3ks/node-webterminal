@@ -385,7 +385,7 @@ TermBuffer.prototype = {
 			var oldInNew = util.indexOf(this.buffer, oldLine)
 			  , newInOld = util.indexOf(this.oldBuffer, line)
 
-			if(oldInNew === -1 && newInOld !== -1) {
+			/*if(oldInNew === -1 && newInOld !== -1) {
 				deleted = newInOld - i;
 				j += deleted;
 				oldLine = this.oldBuffer[j] || emptyLine
@@ -402,7 +402,11 @@ TermBuffer.prototype = {
 				}
 			}
 			else if(deleted !== 0)
-				diff[i] = {rm: deleted};
+				diff[i] = {rm: deleted};*/
+			if(line.changed || line !== oldLine) {
+				diff[i] = {act: 'c', line: line, rm: deleted};
+			}
+			
 			deleted = 0;
 			delete line.changed;
 		}
