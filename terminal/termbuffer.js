@@ -351,8 +351,10 @@ TermBuffer.prototype = {
 			return;
 		}
 
-		if(this.attrCommited == true)
+		if(this.attrCommited == true) {
 			this.attr = util.extend({}, this.attr);
+			delete this.attr.str
+		}
 		this.attr[name] = value;
 		this.attrCommited = false;
 	},
