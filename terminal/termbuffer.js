@@ -84,8 +84,7 @@ TermBuffer.prototype = {
 				else
 					util.extend(c.chr, data[i]);
 
-				if(this.mvCur(1, 0) == false && this.wraparound)
-					this.newLine(true);
+				this.mvCur(1, 0)
 			}
 		}
 	},
@@ -97,8 +96,16 @@ TermBuffer.prototype = {
 		this.getLine();
 	},
 	editChar: function(action) {
+		if(this.cursor.x == this.width) {
+			if(this.wraparound)
+				this.newLine(true);
+			else
+				this.setCur({x: this.width-1});
+		}
+			
 		var line = this.getLine();
 		line.changed = true;
+			
 		if(line[this.cursor.x])
 			return line[this.cursor.x];
 		else
@@ -143,9 +150,11 @@ TermBuffer.prototype = {
 			break;
 		case '1':
 		case 'toBegin':
-			var args = new Array(this.cursor.x);
-			args.unshift(0, this.cursor.x);
+			var args = new Array(this.cursor.x+1);
+			args.unshift(0, this.cursor.x+1);
 			line.splice.apply(line, args);
+			while(line[line.length - 1] === undefined)
+				line.pop();
 			break;
 		case '2':
 		case 'entire':
@@ -266,8 +275,8 @@ TermBuffer.prototype = {
 
 		if(obj.x < 0)
 			obj.x = 0;
-		else if(obj.x >= this.width)
-			obj.x = this.width - 1;
+		else if(obj.x > this.width)
+			obj.x = this.width;
 		else
 			inbounds++
 
@@ -280,8 +289,9 @@ TermBuffer.prototype = {
 
 		util.extend(this.cursor, obj);
 
-		if(this.showCursor)
+		if(this.showCursor && obj.x != this.width) {
 			this.editChar().attr.cursor = true;
+		}
 		this.cursorLine = this.getLine();
 
 		return inbounds === 2;

@@ -18,7 +18,7 @@ describe('TermBuffer', function() {
 		t.write("1234567890abcdefghi")
 		expect(t.toString()).to.be("1234567890\nabcdefghi")
 		t.write("j")
-		expect(t.toString()).to.be("1234567890\nabcdefghij\n")
+		expect(t.toString()).to.be("1234567890\nabcdefghij")
 	})
 	it("scrolls", function() {
 		var t = new TermBuffer(10, 10);

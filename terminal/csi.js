@@ -8,11 +8,12 @@ exports.csi = function(data, terminal) {
 		return 0;
 	var args = match[2] === "" ? [] : match[2].split(';');
 	args.unshift(terminal, terminal.getBuffer(), match[1])
-	if(commands[match[3]])
+	if(commands[match[3]]) {
 		commands[match[3]].apply(terminal, args);
+		console.log("CSI-command '"+match[0]+"'");
+	}
 	else {
 		console.log("Unknown CSI-command '"+match[0]+"'");
-		return -1;
 	}
 	return match[0].length;
 }
