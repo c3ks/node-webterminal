@@ -130,13 +130,17 @@ TermBuffer.prototype = {
 			if(this.scrollArea[1] === this.height - 1)
 				this.buffer.splice(n+1);
 			else
-				for(var i = n + 1; i <= this.scrollArea[1]; i++)
+				for(var i = n + 1; i <= this.scrollArea[1]; i++) {
 					this.buffer[i].splice(0);
+					this.buffer[i].changed = true;
+				}
 			break;
 		case 'toBegin':
 		case '1':
-			for(var i = this.scrollArea[0]; i < n; i++)
+			for(var i = this.scrollArea[0]; i < n; i++) {
 				this.buffer[i].splice(0);
+				this.buffer[i].changed = true;
+			}
 			break;
 		case 'entire':
 		case '2':
@@ -146,6 +150,7 @@ TermBuffer.prototype = {
 	},
 	eraseLine: function(type) {
 		var line = this.getLine();
+		line.changed = true;
 		switch(type || 'toEnd') {
 		case '0':
 		case 'toEnd':
@@ -164,7 +169,6 @@ TermBuffer.prototype = {
 			line.splice(0);
 			break;
 		}
-		line.changed = true;
 		return this;
 	},
 	getLineNumber: function(n) {
@@ -299,10 +303,17 @@ TermBuffer.prototype = {
 		ret.push.apply(ret, this.buffer);
 		return ret;
 	},
-	toString: function() {
+	toString: function(locateCursor) {
 		var ret = []
+		if(locateCursor) {
+			ret.push(Array(this.cursor.x+2).join(' ') + 'v')
+		}
 		for(var i = 0; i < this.buffer.length; i++) {
 			var line = []
+			if(locateCursor) {
+				line.push((this.buffer[i] && this.buffer[i][j] && this.buffer[i][j].changed) ? "*" : " ")
+				line.push(i == this.cursor.y ? ">" : " ")
+				}
 			if(this.buffer[i])
 				for(var j = 0; j < this.buffer[i].length; j++) {
 					line.push(this.buffer[i][j] ? this.buffer[i][j].chr || ' ' : ' ');
@@ -310,6 +321,8 @@ TermBuffer.prototype = {
 				while(line[line.length-1] === ' ') line.pop();
 			ret.push(line.join(''));
 		}
+		if(locateCursor)
+			ret.push(Array(this.cursor.x+2).join(' ') + '^');
 		return ret.join(LF);
 	},
 	resize: function(width, height) {
@@ -362,7 +375,7 @@ TermBuffer.prototype = {
 			this.cursorLine.changed = true;
 			if(!this.cursorLine[this.cursor.x])
 				this.cursorLine[this.cursor.x] = {};
-			this.cursorLine[this.cursor.x].cursor = true;
+			this.cursorLine[this.cursor.x].cursor = this.showCursor;
 		}
 
 
@@ -378,9 +391,15 @@ TermBuffer.prototype = {
 				oldLine = this.oldBuffer[j] || emptyLine
 				oldInNew = util.indexOf(this.buffer, oldLine)
 			}
-			if((line === oldLine && line.changed) || newInOld === -1) {
-				diff[i] = {act: line === oldLine ? 'c' : '+', line: line, rm: deleted};
-				line !== oldLine && j--;
+
+			if(line.changed || newInOld === -1) {
+				if(newInOld === -1) {
+					diff[i] = {act: '+', line: line, rm: deleted};
+					j--;
+				}
+				else {
+					diff[i] = {act: 'c', line: line, rm: deleted};
+				}
 			}
 			else if(deleted !== 0)
 				diff[i] = {rm: deleted};
