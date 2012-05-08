@@ -30,8 +30,6 @@ Terminal.prototype = {
 	escapeWrite: function(data) {
 		if(data === "")
 			return 0;
-		if(this.escapeBuffer !== null)
-			data += this.escapeBuffer;
 		var result = 0;
 		switch(data[0]) {
 			case '[':
@@ -45,15 +43,22 @@ Terminal.prototype = {
 				if(result === -1)
 					console.log("Unknown escape character ^[" + data[0])
 		}
-		if(result == 0)
-			this.escapeBuffer = null;
+		this.escapeBuffer = null;
+		if(result == 0) {
+			this.escapeBuffer = data;
+			result = data.length;
+		}
 		return result < 0 ? 0 : result;
 	},
 	write: function(data) {
 		var i = 0;
-		data = data.toString();
-		if(this.escapeBuffer !== null)
+		if(typeof data !== 'string')
+			data = data.toString();
+
+		if(this.escapeBuffer !== null) {
+			data = this.escapeBuffer + data;
 			i = this.escapeWrite(data);
+		}
 		var buffer = this.getBuffer();
 		for(; i < data.length; i++) {
 			switch(data[i]) {

@@ -50,6 +50,7 @@ function TermBuffer(width, height, defaultAttr) {
 	this.oldBuffer = [];
 	this.cursor = {x:0,y:0};
 	this.cursorLine = null;
+	this.cursorX = 0;
 	this.tabs = []
 	this.currentTab = -1;
 
@@ -62,7 +63,8 @@ function TermBuffer(width, height, defaultAttr) {
 		inverse: false,
 		graphics: false,
 	}, defaultAttr);
-	this.attr = util.extend({}, this.defaultAttr);
+	this.attrCommited = true
+	this.attr = this.defaultAttr;
 }
 
 TermBuffer.prototype = {
@@ -79,7 +81,8 @@ TermBuffer.prototype = {
 				var c = this.editChar();
 				if(typeof data[i] === 'string') {
 					c.chr = this.attr.graphic ? (graphics[data[i]] || data[i]) : data[i];
-					util.extend(c.attr, this.attr);
+					c.attr = this.attr;
+					this.attrCommited = true;
 				}
 				else
 					util.extend(c.chr, data[i]);
@@ -161,7 +164,7 @@ TermBuffer.prototype = {
 			line.splice(0);
 			break;
 		}
-		this.setCur(this.cursor);
+		line.changed = true;
 		return this;
 	},
 	getLineNumber: function(n) {
@@ -184,13 +187,13 @@ TermBuffer.prototype = {
 		delete line[c.x].attr.cursor;
 		var after = line.splice(c.x);
 		var spaces = [];
+		this.attrCommited = true;
 		while(cnt--) {
-			spaces.push({chr:' ', attr: util.extend({},this.attr) })
+			spaces.push({chr:' ', attr: this.attr })
 		}
 		line.push.apply(line, spaces);
 		line.push.apply(line, after);
 		line.splice(this.width);
-		line[c.x].attr.cursor = true;
 	},
 	insertLine: function(insertAfter, n) {
 		n = n === undefined ? this.getLineNumber() : n;
@@ -268,11 +271,6 @@ TermBuffer.prototype = {
 		var inbounds = 0;
 		var c = this.cursor;
 
-		if(this.cursorLine && this.cursorLine[c.x]) {
-			delete this.cursorLine[c.x].attr.cursor;
-			this.cursorLine.changed = true;
-		}
-
 		if(obj.x < 0)
 			obj.x = 0;
 		else if(obj.x > this.width)
@@ -287,12 +285,10 @@ TermBuffer.prototype = {
 		else
 			inbounds++
 
-		util.extend(this.cursor, obj);
-
-		if(this.showCursor && obj.x != this.width) {
-			this.editChar().attr.cursor = true;
-		}
-		this.cursorLine = this.getLine();
+		if(obj.x !== undefined)
+			this.cursor.x = obj.x;
+		if(obj.y !== undefined)
+			this.cursor.y = obj.y;
 
 		return inbounds === 2;
 	},
@@ -335,12 +331,41 @@ TermBuffer.prototype = {
 		}
 		this.setCur(oldCursor);
 	},
+	chAttr: function(name, value) {
+		if(name === 'reset') {
+			this.attr = this.defaultAttr;
+			this.attrCommited = true;
+			return;
+		}
+
+		if(this.attrCommited == true)
+			this.attr = util.extend({}, this.attr);
+		this.attr[name] = value;
+		this.attrCommited = false;
+	},
 	dumpDiff: function() {
 		var diff = {}
 		var lastDiff;
 		var i = 0, j = 0;
 		var emptyLine = [];
 		var deleted = 0;
+
+		if(this.cursorX !== this.cursor.x || this.buffer[this.cursor.y] !== this.cursorLine) {
+			if(this.cursorLine) {
+				this.cursorLine.changed = true;
+				if(this.cursorLine[this.cursorX])
+					delete this.cursorLine[this.cursorX].cursor;
+			}
+
+			this.cursorLine = this.getLine(this.cursor.y)
+			this.cursorX = this.cursor.x;
+			this.cursorLine.changed = true;
+			if(!this.cursorLine[this.cursor.x])
+				this.cursorLine[this.cursor.x] = {};
+			this.cursorLine[this.cursor.x].cursor = true;
+		}
+
+
 		for(; i < Math.min(this.buffer.length, this.oldBuffer.length); i++, j++) {
 			var line = this.buffer[i] || emptyLine
 			  , oldLine = this.oldBuffer[j] || emptyLine

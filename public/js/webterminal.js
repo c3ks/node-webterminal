@@ -145,26 +145,32 @@
 				}
 
 				if(line) {
-					element.innerHTML = (line.length === 0 ? " " : "");
-					for(var i = 0; i < line.length; i++) {
-						if(line[i]) {
+					var frag = document.createDocumentFragment();
+					for(var j = 0; j < line.length; j++) {
+						if(line[j]) {
 							var chr = document.createElement('span');
-							chr.appendChild(document.createTextNode(line[i].chr || ' '))
-							element.appendChild(chr);
-							chr.className = this.attr2Class(line[i].attr)
+							chr.appendChild(document.createTextNode(line[j].chr || ' '))
+							frag.appendChild(chr);
+							chr.className = this.attr2Class(line[j].attr) + (line[j].cursor ? " cursor_true" : "");
 						}
 						else
-							element.appendChild(document.createTextNode(' '))
+							frag.appendChild(document.createTextNode(' '))
 					}
+					element.innerHTML = "";
+					element.appendChild(frag);
 				}
 			}
 		},
 		attr2Class: function(attr) {
+			if(!attr)
+				return '';
+			if(attr.str)
+				return attr.str;
 			var classes = [];
 			for(var k in attr) {
 				classes.push(k+"_"+attr[k]);
 			}
-			return classes.join(' ');
+			return attr.str = classes.join(' ');
 		}
 	}
 

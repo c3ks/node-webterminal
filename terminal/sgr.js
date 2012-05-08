@@ -2,12 +2,12 @@ var util = require('./util');
 
 exports.sgr = function(terminal, sgr) {
 	var buffer = terminal.getBuffer();
-	var attr = buffer.attr
+	var attr = {};
 	var defaultAttr = buffer.defaultAttr;
 	for(var i = 0; i < sgr.length; i++) {
 		switch(parseInt(sgr[i])) {
 		case 0:
-			util.extend(attr, defaultAttr);
+			attr = defaultAttr;
 			break;
 		case 1:
 			attr.bold = true;
@@ -78,5 +78,6 @@ exports.sgr = function(terminal, sgr) {
 			else
 				console.log("Unkown sgr command '"+sgr[i]+"'");
 		}
+		buffer.chAttr(attr);
 	}
 }

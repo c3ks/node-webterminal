@@ -1,21 +1,36 @@
 var sgr = require('./sgr').sgr;
 
-var CSI_PATTERN = /^\[([?]?)([0-9;]*)([@A-Za-z`])/;
+var CSI_PATTERN = /^\[([?!>]?)([0-9;]*)([@A-Za-z`]?)/;
+
+function parseCsi(data) {
+	var match = CSI_PATTERN.exec(data)
+	if(match === null)
+		return null
+	var result = {
+		args: match[2] === "" ? [] : match[2].split(';'),
+		mod: match[1],
+		cmd: match[3],
+		offset: match[0].length
+	};
+	return result;
+}
 
 exports.csi = function(data, terminal) {
-	var match = CSI_PATTERN.exec(data);
-	if(match === null)
+	var match = parseCsi(data);
+	if(match === null || (match.offset != data.length && match.cmd === '')) {
+		console.log("Garbaged CSI: " + (match ? data.slice(0, match.offset+1) : "unknown"));
+		return -1;
+	}
+	if(match.cmd === '')
 		return 0;
-	var args = match[2] === "" ? [] : match[2].split(';');
-	args.unshift(terminal, terminal.getBuffer(), match[1])
-	if(commands[match[3]]) {
-		commands[match[3]].apply(terminal, args);
-		console.log("CSI-command '"+match[0]+"'");
+	match.args.unshift(terminal, terminal.getBuffer(), match.mod)
+	if(commands[match.cmd]) {
+		commands[match.cmd].apply(terminal, match.args);
 	}
 	else {
-		console.log("Unknown CSI-command '"+match[0]+"'");
+		console.log("Unknown CSI-command '"+match.cmd+"'");
 	}
-	return match[0].length;
+	return match.offset;
 }
 
 var modes = {
