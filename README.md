@@ -14,3 +14,5 @@ okay?)
 
 There are still some rendering issues with ncurses, so it's not ready for
 everyday use.
+
+!![Webterminal in Action.](https://raw.github.com/c3ks/node-webterminal/master/ansi.png)
