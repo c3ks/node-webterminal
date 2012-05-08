@@ -12,6 +12,12 @@
 		<script type="text/javascript" charset="utf8" src="/js/webterminal.js"></script>
 		<script type="text/javascript" charset="utf8">
 			$(document).ready(function() {
+				if(!window.console)
+				window.console = {
+					log: function() {
+						//Nothing
+					}
+				}
 				$('#term').webterminal();
 			})
 		</script>
