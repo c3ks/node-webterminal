@@ -37,9 +37,11 @@ var modes = {
 	'4': 'insertMode',
 	'?7': 'wraparound',
 	'?25': 'showCursor',
+	'?20': 'crlf'
 }
 
 function setMode(buffer, mod, n, v) {
+		console.log(mod + n + " " + modes[mod+n] + " = "+ v);
 		if(modes[mod + n]) {
 			buffer[modes[mod + n]] = v;
 		}

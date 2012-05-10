@@ -9,6 +9,12 @@
 		var s = io.connect(url);
 		s.on("ptydata", function (data) { webterminals[data.id].data(data.data) });
 		s.on("ptyexit", function (data) { webterminals[data.id].exit() });
+		s.on("disconnect", function (data) {
+			for(var id in webterminals) {
+				if(webterminals[id].socket === s)
+					webterminals[id].exit();
+			}
+		});
 
 		return sockets[url] = s;
 	}

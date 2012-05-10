@@ -19,5 +19,5 @@ var io = socketio.listen(app);
 
 io.sockets.on('connection', function(socket) {
 	console.log("New Connection opened");
-	new PtyController(socket, "/bin/sh")
+	new PtyController(socket, "sh")
 });

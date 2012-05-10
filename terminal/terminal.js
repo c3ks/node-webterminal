@@ -27,33 +27,11 @@ function Terminal(width, height) {
 }
 
 Terminal.prototype = {
-	escapeWrite: function(data) {
-		if(data === "")
-			return 0;
-		var result = 0;
-		switch(data[0]) {
-			case '[':
-				result = csi(data, this);
-				break;
-			case ']':
-				result = osc(data, this);
-				break;
-			default:
-				result = ansi(data, this);
-				if(result === -1)
-					console.log("Unknown escape character ^[" + data[0])
-		}
-		this.escapeBuffer = null;
-		if(result == 0) {
-			this.escapeBuffer = data;
-			result = data.length;
-		}
-		return result < 0 ? 0 : result;
-	},
-	write: function(data) {
+	writable: true,
+	write: function(data, encoding) {
 		var i = 0;
 		if(typeof data !== 'string')
-			data = data.toString();
+			data = data.toString(encoding);
 
 		if(this.escapeBuffer !== null) {
 			data = this.escapeBuffer + data;
@@ -88,7 +66,41 @@ Terminal.prototype = {
 			}
 		}
 		this.updated();
-		return this;
+		return true;
+	},
+	end: function(data, encoding) {
+		this.writable = false;
+		if(data !== undefined)
+			return this.write(data, encoding);
+	},
+	destroy: function() {
+		this.writable = false;
+	},
+	destroySoon: function() {
+		this.writable = false;
+	},
+	escapeWrite: function(data) {
+		if(data === "")
+			return 0;
+		var result = 0;
+		switch(data[0]) {
+			case '[':
+				result = csi(data, this);
+				break;
+			case ']':
+				result = osc(data, this);
+				break;
+			default:
+				result = ansi(data, this);
+				if(result === -1)
+					console.log("Unknown escape character ^[" + data[0])
+		}
+		this.escapeBuffer = null;
+		if(result == 0) {
+			this.escapeBuffer = data;
+			result = data.length;
+		}
+		return result < 0 ? 0 : result;
 	},
 	setLed: function(n) {
 		if(n == 0)

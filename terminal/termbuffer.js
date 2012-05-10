@@ -43,6 +43,7 @@ function TermBuffer(width, height, defaultAttr) {
 	this.wraparound = true;
 	this.showCursor = true;
 	this.insertMode = false;
+	this.crlf = false;
 
 	this.scrollArea = [0, height - 1];
 	this.scrollBack = [];
@@ -95,7 +96,8 @@ TermBuffer.prototype = {
 		this.getLine().soft = soft;
 		if(this.mvCur(0, 1) == false)
 			this.insertLine(true);
-		this.setCur({x:0})
+		if(this.crlf)
+			this.setCur({x:0})
 		this.getLine();
 	},
 	editChar: function(action) {
