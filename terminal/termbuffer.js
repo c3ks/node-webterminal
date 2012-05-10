@@ -43,7 +43,7 @@ function TermBuffer(width, height, defaultAttr) {
 	this.wraparound = true;
 	this.showCursor = true;
 	this.insertMode = false;
-	this.crlf = false;
+	this.crlf = true;
 
 	this.scrollArea = [0, height - 1];
 	this.scrollBack = [];
