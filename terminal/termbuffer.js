@@ -163,7 +163,7 @@ TermBuffer.prototype = {
 			var args = new Array(this.cursor.x+1);
 			args.unshift(0, this.cursor.x+1);
 			line.splice.apply(line, args);
-			while(line[line.length - 1] === undefined)
+			while(line[line.length - 1] !== undefined)
 				line.pop();
 			break;
 		case '2':
