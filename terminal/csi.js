@@ -56,6 +56,7 @@ function setMode(terminal, buffer, mod, n, v) {
 		case '?1049':
 			setMode(terminal, buffer, mod, '1048', v);
 			setMode(terminal, buffer, mod, '1047', v);
+			break;
 		default:
 			if(modes[mod + n]) {
 				buffer[modes[mod + n]] = v;
