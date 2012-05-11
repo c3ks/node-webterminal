@@ -36,7 +36,7 @@ var graphics = {
 	'~': '\u00B7',
 };
 
-function TermBuffer(width, height, defaultAttr) {
+function TermBuffer(width, height, defaultAttr, cursor) {
 	this.width = width;
 	this.height = height;
 
@@ -49,11 +49,8 @@ function TermBuffer(width, height, defaultAttr) {
 	this.scrollBack = [];
 	this.buffer = []
 	this.oldBuffer = [];
-	this.cursor = {x:0,y:0};
-	this.cursorLine = null;
-	this.cursorX = 0;
+	this.cursor = {x:0, y:0};
 	this.tabs = []
-	this.currentTab = -1;
 
 	this.defaultAttr = util.extend({
 		fg: 15,
@@ -64,7 +61,7 @@ function TermBuffer(width, height, defaultAttr) {
 		inverse: false,
 		graphics: false,
 	}, defaultAttr);
-	this.attrCommited = true
+	this.attrCommited = true;
 	this.attr = this.defaultAttr;
 }
 
@@ -250,9 +247,10 @@ TermBuffer.prototype = {
 		case 'current':
 		case 0:
 			for(var i = this.tabs.length - 1; i >= 0; i--) {
-				if(this.tabs[i] < this.cursor.x)
+				if(this.tabs[i] < this.cursor.x) {
 					this.tabs.splice(i, 1);
 					break;
+				}
 			}
 			break;
 		case 'all':
@@ -360,70 +358,11 @@ TermBuffer.prototype = {
 		this.attr[name] = value;
 		this.attrCommited = false;
 	},
-	dumpDiff: function() {
-		var diff = {}
-		var lastDiff;
-		var i = 0, j = 0;
-		var emptyLine = [];
-		var deleted = 0;
-
-		if(this.cursorX !== this.cursor.x || this.buffer[this.cursor.y] !== this.cursorLine) {
-			if(this.cursorLine) {
-				this.cursorLine.changed = true;
-				if(this.cursorLine[this.cursorX])
-					delete this.cursorLine[this.cursorX].cursor;
-			}
-
-			this.cursorLine = this.getLine(this.cursor.y)
-			this.cursorX = this.cursor.x;
-			this.cursorLine.changed = true;
-			if(!this.cursorLine[this.cursor.x])
-				this.cursorLine[this.cursor.x] = {};
-			this.cursorLine[this.cursor.x].cursor = this.showCursor;
+	resetDiff: function() {
+		for(var i = 0; i < this.buffer.length; i++) {
+			if(this.buffer[i])
+				delete this.buffer[i].changed;
 		}
-
-
-		for(; i < Math.min(this.buffer.length, this.oldBuffer.length); i++, j++) {
-			var line = this.buffer[i] || emptyLine
-			  , oldLine = this.oldBuffer[j] || emptyLine
-			var oldInNew = util.indexOf(this.buffer, oldLine)
-			  , newInOld = util.indexOf(this.oldBuffer, line)
-
-			/*if(oldInNew === -1 && newInOld !== -1) {
-				deleted = newInOld - i;
-				j += deleted;
-				oldLine = this.oldBuffer[j] || emptyLine
-				oldInNew = util.indexOf(this.buffer, oldLine)
-			}
-
-			if(line.changed || newInOld === -1) {
-				if(newInOld === -1) {
-					diff[i] = {act: '+', line: line, rm: deleted};
-					j--;
-				}
-				else {
-					diff[i] = {act: 'c', line: line, rm: deleted};
-				}
-			}
-			else if(deleted !== 0)
-				diff[i] = {rm: deleted};*/
-			if(line.changed || line !== oldLine) {
-				diff[i] = {act: 'c', line: line, rm: deleted};
-			}
-			
-			deleted = 0;
-			delete line.changed;
-		}
-		deleted = this.oldBuffer.length - j
-		for(; i < this.buffer.length; i++){
-			diff[i] = {act: '+', line: this.buffer[i], rm: deleted};
-			deleted = 0;
-		}
-		if(deleted !== 0)
-			diff[i] = {rm: deleted};
-
-		this.oldBuffer = this.buffer.slice(0);
-		return diff;
 	}
 }
 

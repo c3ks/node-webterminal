@@ -3,6 +3,7 @@ var csi = require('./csi').csi;
 var osc = require('./osc').osc;
 var ansi = require('./ansi').ansi;
 var TermBuffer = require('./termbuffer').TermBuffer;
+var TermDiff = require('./termdiff').TermDiff;
 
 var CHR = {
 	BELL: '\x07',
@@ -17,13 +18,15 @@ var CHR = {
 
 function Terminal(width, height) {
 	this.buffers = { def: new TermBuffer(width, height, {}), alt: new TermBuffer(width, height, {}) };
+	this.buffers.alt.crlf = false;
+
+	this.termDiff = new TermDiff();
 	this.currentBuffer = 'def';
 	this.escapeBuffer = null;
 	this.isEscape = false;
 	this.savedCursor = {x:0,y:0};
 	this.title = "";
 	this.leds = {1:false,2:false,3:false,4:false}
-	this.showCursor = true;
 }
 
 Terminal.prototype = {
@@ -65,7 +68,6 @@ Terminal.prototype = {
 					buffer.write(data[i]);
 			}
 		}
-		this.updated();
 		return true;
 	},
 	end: function(data, encoding) {
@@ -119,30 +121,24 @@ Terminal.prototype = {
 	getBuffer: function() {
 		return this.buffers[this.currentBuffer];
 	},
-	toString: function() {
-		return this.getBuffer().toString();
+	diff: function() {
+		return this.termDiff.diff(this.getBuffer());
+	},
+	toString: function(locateCursor) {
+		return this.getBuffer().toString(locateCursor);
 	},
 	saveCur: function() {
-		this.savedCursor = this.getBuffer().cursor;
+		this.savedCursor = util.extend({}, this.getBuffer().cursor);
 		return this;
 	},
 	restCur: function() {
-		return this.getBuffer().setCur(this.savedCursor);
-	},
-	updated: function() {
-		this.onUpdate(this, this.getBuffer());
+		this.buffers.def.setCur(this.savedCursor);
+		this.buffers.alt.setCur(this.savedCursor);
 	},
 	metachanged: function() {
 		this.onMetaChange(this, this.title, this.leds);
 	},
-	cursorVisible: function(visible) {
-		this.showCursor = visible;
-		var diff = {};
-		diff[getBuffer().lineNumber()] = buffer.currentLine();
-		onUpdate(this, diff);
-	},
 	onBell: function(terminal) {},
-	onUpdate: function(terminal, buffer) {},
 	onMetaChange: function(terminal, title, leds) {}
 }
 

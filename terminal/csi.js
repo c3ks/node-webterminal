@@ -40,13 +40,29 @@ var modes = {
 	'?20': 'crlf'
 }
 
-function setMode(buffer, mod, n, v) {
-		console.log(mod + n + " " + modes[mod+n] + " = "+ v);
-		if(modes[mod + n]) {
-			buffer[modes[mod + n]] = v;
-		}
-		else {
-			console.log("Unknown mode:" + mod + n);
+function setMode(terminal, buffer, mod, n, v) {
+		var identifier = mod+n
+		switch(identifier) {
+		case '?1047':
+			terminal.currentBuffer = v ? 'alt' : 'def';
+			terminal.buffers.alt.clear();
+			break;
+		case '?1048':
+			if(v)
+				terminal.saveCur();
+			else
+				terminal.restCur();
+			break;
+		case '?1049':
+			setMode(terminal, buffer, mod, '1048', v);
+			setMode(terminal, buffer, mod, '1047', v);
+		default:
+			if(modes[mod + n]) {
+				buffer[modes[mod + n]] = v;
+			}
+			else {
+				console.log("Unknown mode:" + mod + n);
+			}
 		}
 }
 
@@ -136,9 +152,9 @@ var commands = {
 		terminal.curRest();
 	},
 	'l': function(terminal, buffer, mod, n) {
-		setMode(buffer, mod, n, false);
+		setMode(terminal, buffer, mod, n, false);
 	},
 	'h': function(terminal, buffer, mod, n) {
-		setMode(buffer, mod, n, true)
+		setMode(terminal, buffer, mod, n, true)
 	}
 }
