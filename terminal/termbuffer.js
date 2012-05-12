@@ -164,10 +164,7 @@ TermBuffer.prototype = {
 	getLineNumber: function(n) {
 		if(n === undefined)
 			n = this.cursor.y;
-		if(n > this.scrollArea[1] - this.scrollArea[0] || n < 0)
-			return -1;
-		else
-			return this.scrollArea[0] + n;
+		return n;
 	},
 	getLine: function(n) {
 		n = this.getLineNumber(n);
@@ -198,15 +195,11 @@ TermBuffer.prototype = {
 		var newline = {line:[],attr:{}};
 		this.buffer.push(newline);
 		Array.prototype.push.apply(this.buffer, after);
-		if(this.buffer.length > this.height) {
-			var oversize = this.buffer.length - this.height
-			if(n - 1 === this.scrollArea[1]) {
-				var tail = this.buffer.splice(this.scrollArea[0], oversize);
-				if(this.scrollArea[0] === 0)
-					Array.prototype.push.apply(this.scrollBack, tail);
-			}
-			else
-				this.buffer.splice(this.scrollArea[1], oversize);
+		var oversize = this.buffer.length - this.height;
+		if(oversize > 0) {
+			var tail = this.buffer.splice(this.scrollArea[0], oversize);
+			if(this.scrollArea[0] === 0)
+				Array.prototype.push.apply(this.scrollBack, tail);
 		}
 	},
 	setScrollArea: function(n, m) {
@@ -278,6 +271,8 @@ TermBuffer.prototype = {
 
 		if(obj.y < 0)
 			obj.y = 0;
+		else if(obj.y >= this.height)
+			obj.y = this.height-1;
 		else
 			inbounds++
 
