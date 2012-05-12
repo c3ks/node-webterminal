@@ -35,6 +35,7 @@ exports.csi = function(data, terminal) {
 
 var modes = {
 	'4': 'insertMode',
+	'?1': 'appCursor',
 	'?7': 'wraparound',
 	'?25': 'showCursor',
 	'?20': 'crlf'
@@ -144,6 +145,7 @@ var commands = {
 		terminal.setLed(n);
 	},
 	'r': function(terminal, buffer, mod, n, m) {
+		console.log(mod, n, m);
 		buffer.setScrollArea(n-1, m-1);
 	},
 	's': function(terminal, buffer) {
@@ -153,9 +155,11 @@ var commands = {
 		terminal.curRest();
 	},
 	'l': function(terminal, buffer, mod, n) {
-		setMode(terminal, buffer, mod, n, false);
+		for(var i = 3; i < arguments.length; i++)
+			setMode(terminal, buffer, mod, arguments[i], false);
 	},
 	'h': function(terminal, buffer, mod, n) {
-		setMode(terminal, buffer, mod, n, true)
+		for(var i = 3; i < arguments.length; i++)
+			setMode(terminal, buffer, mod, arguments[i], true);
 	}
 }

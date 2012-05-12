@@ -139,7 +139,26 @@ Terminal.prototype = {
 		this.onMetaChange(this, this.title, this.leds);
 	},
 	onBell: function(terminal) {},
-	onMetaChange: function(terminal, title, leds) {}
+	onMetaChange: function(terminal, title, leds) {},
+	eventToKey: function(event) {
+		var appCursor = this.getBuffer().appCursor;
+		switch(event.which) {
+			case 38: // up
+				return appCursor ? "\x1bOA" : "\x1b[A";
+			case 40: // down
+				return appCursor ? "\x1bOB" : "\x1b[B";
+			case 39: // right
+				return appCursor ? "\x1bOC" : "\x1b[C";
+			case 37: // left
+				return appCursor ? "\x1bOD" : "\x1b[D";
+			case 8:
+				return "\x08";
+			case 9:
+				return "\t";
+			default:
+				return String.fromCharCode(event.which);
+		}
+	}
 }
 
 exports.Terminal = Terminal;

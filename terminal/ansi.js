@@ -65,6 +65,25 @@ exports.ansi = function(data, terminal) {
 		case '#':
 			if(data[1] === undefined)
 				return 0;
+			var line = buffer.getLine();
+			switch(data[1]) {
+			case '3':
+				line.attr.doubletop = true;
+				line.changed = true;
+				break;
+			case '4':
+				line.attr.doublebottom = true;
+				line.changed = true;
+				break;
+			case '5':
+				line.attr.doublewidth = false;
+				line.changed = true;
+				break;
+			case '6':
+				line.attr.doublewidth = true;
+				line.changed = true;
+				break;
+			}
 			return 2;
 		case '=':
 		case '<':

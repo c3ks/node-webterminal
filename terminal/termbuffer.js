@@ -44,6 +44,7 @@ function TermBuffer(width, height, defaultAttr, cursor) {
 	this.showCursor = true;
 	this.insertMode = false;
 	this.crlf = true;
+	this.appCursor = false;
 
 	this.scrollArea = [0, height - 1];
 	this.scrollBack = [];
@@ -60,6 +61,9 @@ function TermBuffer(width, height, defaultAttr, cursor) {
 		blink: false,
 		inverse: false,
 		graphics: false,
+		doubletop: false,
+		doublebottom: false,
+		doublewidth: false
 	}, defaultAttr);
 	this.attrCommited = true;
 	this.attr = this.defaultAttr;
@@ -74,7 +78,7 @@ TermBuffer.prototype = {
 				this.newLine(false);
 			}
 			else {
-				if(this.insertMode && this.getLine()[c.x])
+				if(this.insertMode && this.getLine().line[c.x])
 					this.insertSpace(1);
 				var c = this.editChar();
 				if(typeof data[i] === 'string') {
@@ -108,10 +112,10 @@ TermBuffer.prototype = {
 		var line = this.getLine();
 		line.changed = true;
 			
-		if(line[this.cursor.x])
-			return line[this.cursor.x];
+		if(line.line[this.cursor.x])
+			return line.line[this.cursor.x];
 		else
-			return line[this.cursor.x] = { chr: null, attr: {}};
+			return line.line[this.cursor.x] = { chr: null, attr: {}};
 	},
 	clear: function() {
 		var args = [this.scrollArea[0], this.scrollArea[1] + 1]
@@ -130,14 +134,14 @@ TermBuffer.prototype = {
 				this.buffer.splice(n+1);
 			else
 				for(var i = n + 1; i <= this.scrollArea[1]; i++) {
-					this.buffer[i].splice(0);
-					this.buffer[i].changed = true;
+					this.buffer[i].line.splice(0);
+					this.buffer[i].line.changed = true;
 				}
 			break;
 		case 'toBegin':
 		case '1':
 			for(var i = this.scrollArea[0]; i < n; i++) {
-				this.buffer[i].splice(0);
+				this.buffer[i].line.splice(0);
 				this.buffer[i].changed = true;
 			}
 			break;
@@ -153,19 +157,19 @@ TermBuffer.prototype = {
 		switch(type || 'toEnd') {
 		case '0':
 		case 'toEnd':
-			line.splice(this.cursor.x);
+			line.line.splice(this.cursor.x);
 			break;
 		case '1':
 		case 'toBegin':
 			var args = new Array(this.cursor.x+1);
 			args.unshift(0, this.cursor.x+1);
-			line.splice.apply(line, args);
-			while(line[line.length - 1] !== undefined)
+			line.line.splice.apply(line.line, args);
+			while(line.line[line.line.length - 1] !== undefined)
 				line.pop();
 			break;
 		case '2':
 		case 'entire':
-			line.splice(0);
+			line.line.splice(0);
 			break;
 		}
 		return this;
@@ -182,33 +186,34 @@ TermBuffer.prototype = {
 		n = this.getLineNumber(n);
 		if(n < 0)
 			return null;
-		return this.buffer[n] || ((this.buffer[n] = []));
+		return this.buffer[n] || ((this.buffer[n] = {line:[],attr:{}}));
 	},
 	insertSpace: function(cnt) {
 		var line = this.getLine();
+		line.changed = true;
 		var c = this.cursor;
-		delete line[c.x].attr.cursor;
-		var after = line.splice(c.x);
+		delete line.line[c.x].attr.cursor;
+		var after = line.line.splice(c.x);
 		var spaces = [];
 		this.attrCommited = true;
 		while(cnt--) {
 			spaces.push({chr:' ', attr: this.attr })
 		}
-		line.push.apply(line, spaces);
-		line.push.apply(line, after);
-		line.splice(this.width);
+		Array.prototype.push.apply(line.line, spaces);
+		Array.prototype.push.apply(line.line, after);
+		line.line.splice(this.width);
 	},
 	insertLine: function(insertAfter, n) {
 		n = n === undefined ? this.getLineNumber() : n;
 		if(insertAfter)
 			n++;
 		var after = this.buffer.splice(n);
-		var newline = [];
+		var newline = {line:[],attr:{}};
 		this.buffer.push(newline);
 		this.buffer.push.apply(this.buffer, after);
 		if(this.buffer.length > this.height) {
 			var oversize = this.buffer.length - this.height
-			if(n - 1 == this.scrollArea[1]) {
+			if(n - 1 === this.scrollArea[1]) {
 				var tail = this.buffer.splice(this.scrollArea[0], oversize);
 				if(this.scrollArea[0] == 0)
 					this.scrollBack.push.apply(this.scrollBack, tail);
@@ -226,12 +231,14 @@ TermBuffer.prototype = {
 	},
 	deleteChar: function(n) {
 		var line = this.getLine();
-		line.splice(this.cursor.x, n);
+		line.line.splice(this.cursor.x, n);
 		this.setCur(this.cursor);
 	},
 	eraseChar: function(cnt) {
 		var line = this.getLine();
-		line.splice(this.cursor.x, n, new Array(n));
+		var args = new Array(n);
+		args.unshift(this.cursor.x, n);
+		Array.prototype.splice.apply(line.line, args);
 		this.setCur(this.cursor);
 	},
 	mvCur: function(x, y) {
@@ -311,12 +318,12 @@ TermBuffer.prototype = {
 		for(var i = 0; i < this.buffer.length; i++) {
 			var line = []
 			if(locateCursor) {
-				line.push((this.buffer[i] && this.buffer[i][j] && this.buffer[i][j].changed) ? "*" : " ")
+				line.push((this.buffer[i] && this.buffer[i].changed) ? "*" : " ")
 				line.push(i == this.cursor.y ? ">" : " ")
-				}
+			}
 			if(this.buffer[i])
 				for(var j = 0; j < this.buffer[i].length; j++) {
-					line.push(this.buffer[i][j] ? this.buffer[i][j].chr || ' ' : ' ');
+					line.push(this.buffer[i].line[j] ? (this.buffer[i][j].chr || ' ') : ' ');
 				}
 				while(line[line.length-1] === ' ') line.pop();
 			ret.push(line.join(''));

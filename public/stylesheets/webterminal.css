@@ -1723,6 +1723,38 @@
 	-webkit-animation-duration: 2s; 
 }
 
+/*.webterminal span {
+	float:left;
+	position:relative;
+}
+.webterminal div {
+	overflow:hidden;
+}
+
+.webterminal .doubletop_true {
+	-webkit-transform: scale(1,2) translate(0,25%)
+}
+
+.webterminal .doublebottom_true {
+	-webkit-transform: scale(1,2) translate(0,-25%)
+}
+
+.webterminal .doublewidth_true {
+	-webkit-transform: scale(2,1) translate(25%,0);
+	z-index:0;
+}
+.webterminal .doublewidth_true::after {
+	content:" ";
+}
+
+.webterminal .doublewidth_true.doubletop_true {
+	-webkit-transform: scale(2) translate(25%,25%);
+}
+
+.webterminal .doublewidth_true.doublebottom_true {
+	-webkit-transform: scale(2) translate(25%,-25%);
+}*/
+
 .webterminal .terminated {
 	opacity: 0.5;
 }

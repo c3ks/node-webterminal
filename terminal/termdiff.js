@@ -16,16 +16,16 @@ TermDiff.prototype = {
 		if(this.cursorX !== newBuffer.cursor.x || newBuffer.buffer[newBuffer.cursor.y] !== this.cursorLine) {
 			if(this.cursorLine) {
 				this.cursorLine.changed = true;
-				if(this.cursorLine[this.cursorX])
-					delete this.cursorLine[this.cursorX].cursor;
+				if(this.cursorLine.line[this.cursorX])
+					delete this.cursorLine.line[this.cursorX].cursor;
 			}
 
 			this.cursorLine = newBuffer.getLine(newBuffer.cursor.y);
 			this.cursorX = newBuffer.cursor.x;
 			this.cursorLine.changed = true;
-			if(!this.cursorLine[newBuffer.cursor.x])
-				this.cursorLine[newBuffer.cursor.x] = {};
-			this.cursorLine[newBuffer.cursor.x].cursor = newBuffer.showCursor;
+			if(!this.cursorLine.line[newBuffer.cursor.x])
+				this.cursorLine.line[newBuffer.cursor.x] = {};
+			this.cursorLine.line[newBuffer.cursor.x].cursor = newBuffer.showCursor;
 		}
 
 
@@ -54,14 +54,14 @@ TermDiff.prototype = {
 			else if(deleted !== 0)
 				diff[i] = {rm: deleted};*/
 			if(line.changed || line !== oldLine) {
-				diff[i] = {act: 'c', line: line, rm: deleted};
+				diff[i] = util.extend({act: 'c', rm: deleted}, line);
 			}
 			
 			deleted = 0;
 		}
 		deleted = this.oldBuffer.length - j
 		for(; i < newBuffer.buffer.length; i++){
-			diff[i] = {act: '+', line: newBuffer.buffer[i], rm: deleted};
+			diff[i] = util.extend({act: '+', rm: deleted}, newBuffer.buffer[i]);
 			deleted = 0;
 		}
 		if(deleted !== 0)

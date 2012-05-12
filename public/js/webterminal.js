@@ -93,7 +93,7 @@
 		},
 
 		keypress: function(event) {
-			this.sendInput(String.fromCharCode(event.which));
+			this.sendInput(this.terminal.eventToKey(event));
 			return false;
 		},
 
@@ -104,22 +104,12 @@
 		keydown: function(event) {
 			switch(event.which) {
 				case 38: // up
-					this.sendInput("\x1b[A");
-					return false;
 				case 40: // down
-					this.sendInput("\x1b[B");
-					return false;
 				case 39: // right
-					this.sendInput("\x1b[C");
-					return false;
 				case 37: // left
-					this.sendInput("\x1b[D");
-					return false;
 				case 8:
-					this.sendInput("\x08");
-					return false;
 				case 9:
-					this.sendInput("\t");
+					this.sendInput(this.terminal.eventToKey(event));
 					return false;
 			}
 			return true;
@@ -137,6 +127,7 @@
 				var action = diff[i].act;
 				var line = diff[i].line;
 				var deleted = diff[i].rm;
+				var attr = diff[i].attr;
 
 				while(deleted--)
 					this.box.removeChild(children[i]);
@@ -151,6 +142,7 @@
 				}
 
 				if(line) {
+					element.className = this.attr2Class(attr);
 					var frag = document.createDocumentFragment();
 					for(var j = 0; j < line.length; j++) {
 						if(line[j]) {
