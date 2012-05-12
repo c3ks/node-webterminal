@@ -10,7 +10,7 @@ TermDiff.prototype = {
 	diff: function(newBuffer) {
 		var diff = {}
 		var i = 0, j = 0;
-		var emptyLine = [];
+		var emptyLine = {line:[]};
 		var deleted = 0;
 
 		if(this.cursorX !== newBuffer.cursor.x || newBuffer.buffer[newBuffer.cursor.y] !== this.cursorLine) {

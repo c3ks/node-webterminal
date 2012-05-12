@@ -165,7 +165,7 @@ TermBuffer.prototype = {
 			args.unshift(0, this.cursor.x+1);
 			line.line.splice.apply(line.line, args);
 			while(line.line[line.line.length - 1] !== undefined)
-				line.pop();
+				line.line.pop();
 			break;
 		case '2':
 		case 'entire':
@@ -322,8 +322,8 @@ TermBuffer.prototype = {
 				line.push(i == this.cursor.y ? ">" : " ")
 			}
 			if(this.buffer[i])
-				for(var j = 0; j < this.buffer[i].length; j++) {
-					line.push(this.buffer[i].line[j] ? (this.buffer[i][j].chr || ' ') : ' ');
+				for(var j = 0; j < this.buffer[i].line.length; j++) {
+					line.push(this.buffer[i].line[j] ? (this.buffer[i].line[j].chr || ' ') : ' ');
 				}
 				while(line[line.length-1] === ' ') line.pop();
 			ret.push(line.join(''));

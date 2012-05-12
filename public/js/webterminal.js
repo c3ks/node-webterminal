@@ -144,7 +144,8 @@
 				if(line) {
 					element.className = this.attr2Class(attr);
 					var frag = document.createDocumentFragment();
-					for(var j = 0; j < line.length; j++) {
+					var j;
+					for(j = 0; j < line.length; j++) {
 						if(line[j]) {
 							var chr = document.createElement('span');
 							chr.appendChild(document.createTextNode(line[j].chr || ' '))
@@ -154,6 +155,8 @@
 						else
 							frag.appendChild(document.createTextNode(' '))
 					}
+					if(j == 0)
+						frag.appendChild(document.createTextNode(' '));
 					element.innerHTML = "";
 					element.appendChild(frag);
 				}
