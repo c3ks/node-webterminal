@@ -118,32 +118,19 @@ TermBuffer.prototype = {
 			return line.line[this.cursor.x] = { chr: null, attr: {}};
 	},
 	clear: function() {
-		var args = [this.scrollArea[0], this.scrollArea[1] + 1]
-		if(this.scrollArea[1] !== this.height - 1)
-			args.push.apply(args, new Array(this.scrollArea[1] - this.scrollArea[0] + 1));
-		var leftover = this.buffer.splice.apply(this.buffer, args);
-		if(this.scrollArea[0] === 0)
-			this.scrollBack.push.apply(this.scrollArea, leftover);
+		Array.prototype.push.apply(this.scrollBack, this.buffer.splice(0));
 	},
 	eraseData: function(type, n) {
 		n = n === undefined ? this.getLineNumber() : n;
 		switch(type || 'toEnd') {
 		case 'toEnd':
 		case '0':
-			if(this.scrollArea[1] === this.height - 1)
-				this.buffer.splice(n+1);
-			else
-				for(var i = n + 1; i <= this.scrollArea[1]; i++) {
-					this.buffer[i].line.splice(0);
-					this.buffer[i].line.changed = true;
-				}
+			this.buffer.splice(n+1);
 			break;
 		case 'toBegin':
 		case '1':
-			for(var i = this.scrollArea[0]; i < n; i++) {
-				this.buffer[i].line.splice(0);
-				this.buffer[i].changed = true;
-			}
+			var args = [0, this.cursor.y-1, Array(this.cursor.y-1)];
+			Array.prototype.splice.apply(this.buffer, args);
 			break;
 		case 'entire':
 		case '2':
@@ -163,7 +150,7 @@ TermBuffer.prototype = {
 		case 'toBegin':
 			var args = new Array(this.cursor.x+1);
 			args.unshift(0, this.cursor.x+1);
-			line.line.splice.apply(line.line, args);
+			Array.prototype.splice.apply(line.line, args);
 			while(line.line[line.line.length - 1] !== undefined)
 				line.line.pop();
 			break;
@@ -210,13 +197,13 @@ TermBuffer.prototype = {
 		var after = this.buffer.splice(n);
 		var newline = {line:[],attr:{}};
 		this.buffer.push(newline);
-		this.buffer.push.apply(this.buffer, after);
+		Array.prototype.push.apply(this.buffer, after);
 		if(this.buffer.length > this.height) {
 			var oversize = this.buffer.length - this.height
 			if(n - 1 === this.scrollArea[1]) {
 				var tail = this.buffer.splice(this.scrollArea[0], oversize);
-				if(this.scrollArea[0] == 0)
-					this.scrollBack.push.apply(this.scrollBack, tail);
+				if(this.scrollArea[0] === 0)
+					Array.prototype.push.apply(this.scrollBack, tail);
 			}
 			else
 				this.buffer.splice(this.scrollArea[1], oversize);
@@ -291,8 +278,6 @@ TermBuffer.prototype = {
 
 		if(obj.y < 0)
 			obj.y = 0;
-		else if(obj.y > this.scrollArea[1] - this.scrollArea[0])
-			obj.y = this.scrollArea[1] - this.scrollArea[0];
 		else
 			inbounds++
 
@@ -306,8 +291,8 @@ TermBuffer.prototype = {
 	dump: function(withScrollBack) {
 		var ret = []
 		if(withScrollBack)
-			ret.push.apply(ret, this.scrollBack);
-		ret.push.apply(ret, this.buffer);
+			Array.prototype.push.apply(ret, this.scrollBack);
+		Array.prototype.push.apply(ret, this.buffer);
 		return ret;
 	},
 	toString: function(locateCursor) {
@@ -334,7 +319,7 @@ TermBuffer.prototype = {
 	},
 	resize: function(width, height) {
 		var old = this.scrollBack;
-		old.push.apply(old, this.buffer);
+		Array.prototype.push.apply(old, this.buffer);
 		var oldCursor = this.cursor;
 		this.setCur(this.cursor = {x:0,y:0})
 		this.height = height;
