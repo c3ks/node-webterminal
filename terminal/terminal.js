@@ -102,6 +102,7 @@ Terminal.prototype = {
 			this.escapeBuffer = data;
 			result = data.length;
 		}
+		console.log(data.slice(0, result))
 		return result < 0 ? 0 : result;
 	},
 	setLed: function(n) {

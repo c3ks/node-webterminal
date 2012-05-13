@@ -6,7 +6,7 @@ exports.sgr = function(terminal, sgr) {
 	for(var i = 0; i < sgr.length; i++) {
 		switch(parseInt(sgr[i])) {
 		case 0:
-			buffer.chAttr('reset')
+			buffer.chAttr('reset');
 			break;
 		case 1:
 			buffer.chAttr('bold', true);

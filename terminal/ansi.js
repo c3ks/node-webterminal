@@ -8,7 +8,10 @@ exports.ansi = function(data, terminal) {
 			buffer.attr.graphic = data[1] === '2' || data[1] === '0';
 			return 2;
 		case 'c':
+			// TODO: do a real reset.
+			buffer.setCur(0,0);
 			buffer.clear();
+			buffer.attr = buffer.defaultAttr;
 			return 1;
 		case 'D':
 			buffer.write('\x84');

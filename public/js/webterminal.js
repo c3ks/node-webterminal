@@ -103,6 +103,7 @@
 
 		keydown: function(event) {
 			switch(event.which) {
+				case 27:
 				case 38: // up
 				case 40: // down
 				case 39: // right
