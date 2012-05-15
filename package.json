@@ -6,7 +6,8 @@
       "connect": ">= 2.2.0"
     , "socket.io": "0.9.x"
     , "browserbuild": "0.4.x"
-	, "pty.js": "0.1.x"
+    , "terminal": "git://github.com/Gottox/terminal.js.git"
+    , "pty.js": "0.1.x"
   },
   "devDependencies": {
     "mocha": "*",

@@ -38,11 +38,12 @@
 		}
 
 		this.terminal = new terminal.Terminal(options.cols, options.rows, options);
+		this.termDiff = new terminal.TermDiff(this.terminal)
 
 		this.box = document.createElement('pre');
 		element.appendChild(this.box);
 		element.className += ' webterminal';
-		this.box.className = this.attr2Class(this.terminal.getBuffer().attr);
+		this.box.className = this.attr2Class(this.terminal.attr);
 
 		this.socket = initSocket(options.url);
 		this.socket.emit("ptyinit", { id: this.id });
@@ -118,7 +119,7 @@
 
 		data: function(data) {
 			this.terminal.write(data);
-			var diff = this.terminal.diff();
+			var diff = this.termDiff.diff();
 			this.render(diff);
 		},
 
