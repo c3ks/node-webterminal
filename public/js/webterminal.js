@@ -160,6 +160,9 @@
 					element.innerHTML = "";
 					element.appendChild(frag);
 				}
+				else if(element) {
+					element.appendChild(document.createTextNode(' '))
+				}
 			}
 		},
 		attr2Class: function(attr) {
