@@ -33,11 +33,9 @@
 		webterminals[this.id] = this;
 
 		options = options || {
-			cols:80,
-			rows:24
 		}
 
-		this.terminal = new terminal.Terminal(options.cols, options.rows, options);
+		this.terminal = new terminal.Terminal(80, 24, options);
 		this.termDiff = new terminal.TermDiff(this.terminal)
 
 		this.box = document.createElement('pre');
@@ -171,7 +169,8 @@
 				return attr.str;
 			var classes = [];
 			for(var k in attr) {
-				classes.push(k+"_"+attr[k]);
+				if(k != 'str')
+					classes.push(k+"_"+attr[k]);
 			}
 			return attr.str = classes.join(' ');
 		}
