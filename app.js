@@ -12,7 +12,7 @@ var connect = require('connect')
 var app = connect()
 	.use(connect.logger('dev'))
 	.use(connect.static('public'))
-	.use(connect.static('node_modules/terminal/dist'))
+	.use(connect.static('node_modules/terminal.js/dist'))
 	.listen(3000);
 
 var io = socketio.listen(app);
