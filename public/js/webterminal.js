@@ -19,7 +19,7 @@
 		return sockets[url] = s;
 	}
 
-	function extend(o){
+	function extend(o) {
 		for(var i = 1; i < arguments.length; i++)
 			for(var key in arguments[i])
 				o[key] = arguments[i][key];
@@ -32,8 +32,7 @@
 		this.id = Math.random().toString().substr(2);
 		webterminals[this.id] = this;
 
-		options = options || {
-		}
+		options = options || {}
 
 		this.terminal = new terminal.Terminal(80, 24, options);
 		this.termDiff = new terminal.TermDiff(this.terminal)
@@ -69,7 +68,7 @@
 			window.onkeypress = function(event) { return self.keypress(event) };
 			window.onkeydown = function(event) { return self.keydown(event) };
 			setTimeout(function() {
-				window.onclick = function() { self.blur() }
+				window.onclick = function() { self.blur(); }
 			},100);
 			this.box.className += " focus";
 		},

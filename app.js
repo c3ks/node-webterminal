@@ -5,7 +5,6 @@
 var connect = require('connect')
   , socketio = require('socket.io')
   , PtyController = require('./controllers/ptycontroller').PtyController
-  , routes = require('./routes')
 
 // Configuration
 
